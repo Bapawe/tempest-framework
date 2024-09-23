@@ -11,17 +11,24 @@ use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
  */
 final class ResolveOrRescueMiddlewareTest extends FrameworkIntegrationTestCase
 {
-    public function test_rescue(): void
+    public function test_has_single_similar_commands(): void
     {
         $this->console
-            ->call('rescue-test:')
-            ->assertSee('Did you mean rescue-test:rescue?');
+            ->call('discovery:sta')
+            ->assertSee('Did you mean discovery:status?');
     }
 
-    public function test_rescue_levenshtein(): void
+    public function test_has_multiple_similar_commands(): void
     {
         $this->console
-            ->call('rescue-test:reescue')
-            ->assertSee('Did you mean rescue-test:rescue?');
+            ->call('discovery')
+            ->assertSee('Did you mean to run one of these?  [discovery:cache/discovery:status/discovery:clear]');
+    }
+
+    public function test_levenshtein(): void
+    {
+        $this->console
+            ->call('bascovery:status')
+            ->assertSee('Did you mean discovery:status?');
     }
 }
