@@ -166,6 +166,12 @@ final class ArrayHelperTest extends TestCase
 
         $this->assertSame('c', $value);
         $this->assertTrue($array->equals(['a', 'b']));
+
+        $this->assertTrue(arr(['a', 'b', 'c'])->pop()->equals(['a', 'b']));
+        $this->assertTrue(arr()->pop()->isEmpty());
+
+        arr()->pop($value);
+        $this->assertNull($value);
     }
 
     public function test_unshift(): void
@@ -174,16 +180,24 @@ final class ArrayHelperTest extends TestCase
 
         $this->assertSame('a', $value);
         $this->assertTrue($array->equals(['b', 'c']));
+
+        $this->assertTrue(arr(['a', 'b', 'c'])->unshift()->equals(['b', 'c']));
+        $this->assertTrue(arr()->unshift()->isEmpty());
+
+        arr()->unshift($value);
+        $this->assertNull($value);
     }
 
     public function test_last(): void
     {
+        $this->assertSame(null, arr()->last());
         $this->assertSame('c', arr(['a', 'b', 'c'])->last());
     }
 
     public function test_first(): void
     {
         $this->assertSame('a', arr(['a', 'b', 'c'])->first());
+        $this->assertSame(null, arr()->first());
     }
 
     public function test_is_empty(): void
@@ -1278,6 +1292,93 @@ final class ArrayHelperTest extends TestCase
                 'last_name' => 'Doe',
                 'age' => 42,
             ],
+        );
+    }
+
+    public function test_sort(): void
+    {
+        $array = arr([1 => 'c', 2 => 'a', 3 => 'b']);
+
+        // Test auto-detects key preservation
+        $this->assertSame(
+            expected: ['a', 'b', 'c'],
+            actual: arr(['c', 'a', 'b'])->sort()->toArray(),
+        );
+        $this->assertSame(
+            expected: [2 => 'a', 3 => 'b', 1 => 'c'],
+            actual: $array->sort()->toArray(),
+        );
+
+        $this->assertSame(
+            expected: ['a', 'b', 'c'],
+            actual: $array->sort(desc: false, preserveKeys: false)->toArray(),
+        );
+        $this->assertSame(
+            expected: ['c', 'b', 'a'],
+            actual: $array->sort(desc: true, preserveKeys: false)->toArray(),
+        );
+
+        $this->assertSame(
+            expected: [2 => 'a', 3 => 'b', 1 => 'c'],
+            actual: $array->sort(desc: false, preserveKeys: true)->toArray(),
+        );
+        $this->assertSame(
+            expected: [1 => 'c', 3 => 'b', 2 => 'a'],
+            actual: $array->sort(desc: true, preserveKeys: true)->toArray(),
+        );
+    }
+
+    public function test_sort_by_callback(): void
+    {
+        $array = arr([1 => 'c', 2 => 'a', 3 => 'b']);
+
+        // Test auto-detects key preservation
+        $this->assertSame(
+            expected: ['a', 'b', 'c'],
+            actual: arr(['c', 'a', 'b'])->sortByCallback(fn ($a, $b) => $a <=> $b)->toArray(),
+        );
+        $this->assertSame(
+            expected: [2 => 'a', 3 => 'b', 1 => 'c'],
+            actual: $array->sortByCallback(fn ($a, $b) => $a <=> $b)->toArray(),
+        );
+
+        $this->assertSame(
+            expected: ['a', 'b', 'c'],
+            actual: $array->sortByCallback(
+                callback: fn ($a, $b) => $a <=> $b,
+                preserveKeys: false,
+            )->toArray(),
+        );
+        $this->assertSame(
+            expected: [2 => 'a', 3 => 'b', 1 => 'c'],
+            actual: $array->sortByCallback(
+                callback: fn ($a, $b) => $a <=> $b,
+                preserveKeys: true,
+            )->toArray(),
+        );
+    }
+
+    public function test_sort_keys(): void
+    {
+        $array = arr([2 => 'a', 1 => 'c', 3 => 'b']);
+
+        $this->assertSame(
+            expected: [1 => 'c', 2 => 'a', 3 => 'b'],
+            actual: $array->sortKeys(desc: false)->toArray(),
+        );
+        $this->assertSame(
+            expected: [3 => 'b', 2 => 'a', 1 => 'c'],
+            actual: $array->sortKeys(desc: true)->toArray(),
+        );
+    }
+
+    public function test_sort_keys_by_callback(): void
+    {
+        $array = arr([2 => 'a', 1 => 'c', 3 => 'b']);
+
+        $this->assertSame(
+            expected: [1 => 'c', 2 => 'a', 3 => 'b'],
+            actual: $array->sortKeysByCallback(fn ($a, $b) => $a <=> $b)->toArray(),
         );
     }
 }
