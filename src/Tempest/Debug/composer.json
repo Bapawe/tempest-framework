@@ -4,8 +4,8 @@
     "license": "MIT",
     "minimum-stability": "dev",
     "require": {
-        "php": "^8.3",
-        "tempest/highlight": "^2.0",
+        "php": "^8.4",
+        "tempest/highlight": "^2.11.2",
         "symfony/var-dumper": "^7.1"
     },
     "autoload": {
