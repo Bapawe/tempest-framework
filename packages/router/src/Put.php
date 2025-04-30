@@ -17,7 +17,7 @@ final readonly class Put implements Route
      */
     public function __construct(
         public string $uri,
-        public array $middleware = [],
+        public array $middleware = [ValidateCsrfTokenMiddleware::class],
     ) {
         $this->method = Method::PUT;
     }
