@@ -8,7 +8,7 @@ interface CsrfTokenManager
 {
     public function getToken(): string;
 
-    public function refreshToken(): void;
+    public function refreshToken(): string;
 
     public function isTokenValid(string $token): bool;
 

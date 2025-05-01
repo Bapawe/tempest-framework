@@ -24,14 +24,14 @@ final readonly class GenericCsrfTokenManager implements CsrfTokenManager
             return $token;
         }
 
-        $this->refreshToken();
-
-        return $this->session->get(self::TOKEN_NAME);
+        return $this->refreshToken();
     }
 
-    public function refreshToken(): void
+    public function refreshToken(): string
     {
         $this->session->set(self::TOKEN_NAME, secure_string(length: 40));
+
+        return $this->session->get(self::TOKEN_NAME);
     }
 
     public function isTokenValid(#[\SensitiveParameter]  $token): bool
