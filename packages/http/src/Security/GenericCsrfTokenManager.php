@@ -41,6 +41,6 @@ final readonly class GenericCsrfTokenManager implements CsrfTokenManager
 
     public function findTokenInRequest(Request $request): ?string
     {
-        return $request->get(self::TOKEN_NAME);
+        return $request->get(self::TOKEN_NAME) ?? $request->headers['X-CSRF-Token'] ?? null;
     }
 }
