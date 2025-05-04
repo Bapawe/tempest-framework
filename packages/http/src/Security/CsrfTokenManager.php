@@ -2,15 +2,15 @@
 
 namespace Tempest\Http\Security;
 
-use Tempest\Http\Request;
+use SensitiveParameter;
 
 interface CsrfTokenManager
 {
+    public function generateToken(): string;
+
     public function getToken(): string;
 
     public function refreshToken(): string;
 
-    public function isTokenValid(string $token): bool;
-
-    public function findTokenInRequest(Request $request): ?string;
+    public function isTokenValid(#[SensitiveParameter] string $token): bool;
 }

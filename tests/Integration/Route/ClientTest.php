@@ -12,6 +12,7 @@ use Psr\Http\Client\ClientInterface;
 use Symfony\Component\Process\Process;
 use Tempest\Http\Security\CsrfTokenManager;
 use Tempest\HttpClient\HttpClient;
+use Tempest\Router\ValidateCsrfTokenMiddleware;
 use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
 
 use function Tempest\root_path;
@@ -59,7 +60,7 @@ final class ClientTest extends FrameworkIntegrationTestCase
             ->withHeader('Referer', 'http://localhost:8088/request-test/form')
             ->withHeader('Accept', 'application/json')
             ->withHeader('Content-Type', 'application/x-www-form-urlencoded')
-            ->withHeader('X-CSRF-Token', $this->container->get(CsrfTokenManager::class)->getToken())
+            ->withHeader(ValidateCsrfTokenMiddleware::HEADER_NAME, $this->container->get(CsrfTokenManager::class)->getToken())
             ->withBody(new StreamFactory()->createStream('name=a a&b.name=b'));
 
         try {
@@ -79,7 +80,7 @@ final class ClientTest extends FrameworkIntegrationTestCase
             ->createRequest('POST', new Uri('http://localhost:8088/request-test/form'))
             ->withHeader('Accept', 'application/json')
             ->withHeader('Content-Type', 'application/json')
-            ->withHeader('X-CSRF-Token', $this->container->get(CsrfTokenManager::class)->getToken())
+            ->withHeader(ValidateCsrfTokenMiddleware::HEADER_NAME, $this->container->get(CsrfTokenManager::class)->getToken())
             ->withBody(new StreamFactory()->createStream('{"name": "a a", "b": {"name": "b"}}'));
 
         try {

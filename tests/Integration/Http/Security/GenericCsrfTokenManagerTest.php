@@ -8,8 +8,6 @@ use Override;
 use PHPUnit\Framework\Attributes\Test;
 use Tempest\Clock\Clock;
 use Tempest\Core\FrameworkKernel;
-use Tempest\Http\GenericRequest;
-use Tempest\Http\Method;
 use Tempest\Http\Security\GenericCsrfTokenManager;
 use Tempest\Http\Session\Managers\FileSessionManager;
 use Tempest\Http\Session\Session;
@@ -56,21 +54,22 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function it_can_generate(): void
+    public function generate_token(): void
+    {
+        $tokenA = $this->genericCsrfTokenManager->generateToken();
+        $tokenB = $this->genericCsrfTokenManager->generateToken();
+
+        $this->assertSame(40, strlen($tokenA));
+        $this->assertSame(40, strlen($tokenB));
+        $this->assertNotSame($tokenA, $tokenB);
+    }
+
+    #[Test]
+    public function get_token(): void
     {
         $token = $this->genericCsrfTokenManager->getToken();
 
         $this->assertNotEmpty($token);
-    }
-
-    #[Test]
-    public function it_can_validate(): void
-    {
-        $token = $this->genericCsrfTokenManager->getToken();
-
-        $isValid = $this->genericCsrfTokenManager->isTokenValid($token);
-
-        $this->assertTrue($isValid);
     }
 
     #[Test]
@@ -84,15 +83,12 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function it_can_find_token_in_request(): void
+    public function is_token_valid(): void
     {
         $token = $this->genericCsrfTokenManager->getToken();
-        $request = new GenericRequest(Method::POST, '/', [
-            GenericCsrfTokenManager::TOKEN_NAME => $token,
-        ]);
 
-        $tokenInRequest = $this->genericCsrfTokenManager->findTokenInRequest($request);
+        $isValid = $this->genericCsrfTokenManager->isTokenValid($token);
 
-        $this->assertSame($token, $tokenInRequest);
+        $this->assertTrue($isValid);
     }
 }
