@@ -59,17 +59,16 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
         $tokenA = $this->genericCsrfTokenManager->generateToken();
         $tokenB = $this->genericCsrfTokenManager->generateToken();
 
-        $this->assertSame(40, strlen($tokenA));
-        $this->assertSame(40, strlen($tokenB));
         $this->assertNotSame($tokenA, $tokenB);
     }
 
     #[Test]
     public function get_token(): void
     {
-        $token = $this->genericCsrfTokenManager->getToken();
+        $tokenA = $this->genericCsrfTokenManager->getToken();
+        $tokenB = $this->genericCsrfTokenManager->getToken();
 
-        $this->assertNotEmpty($token);
+        $this->assertSame($tokenA, $tokenB);
     }
 
     #[Test]

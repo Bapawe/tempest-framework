@@ -14,7 +14,8 @@ use Tempest\Http\Security\CsrfTokenManager;
 #[Priority(Priority::FRAMEWORK)]
 final readonly class ValidateCsrfTokenMiddleware implements HttpMiddleware
 {
-    public const string HEADER_NAME = 'X-CSRF-TOKEN';
+    public const string HEADER_NAME = 'X-CSRF-Token';
+
     public const string PARAM_NAME = '_token';
 
     public function __construct(

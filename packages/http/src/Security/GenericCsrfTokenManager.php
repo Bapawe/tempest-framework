@@ -19,7 +19,6 @@ final readonly class GenericCsrfTokenManager implements CsrfTokenManager
 
     public function generateToken(): string
     {
-        ll('Generating CSRF token');
         return secure_string(length: 40);
     }
 
