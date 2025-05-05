@@ -19,8 +19,7 @@ use Tempest\Framework\Testing\Http\HttpRouterTester;
 use Tempest\Http\GenericRequest;
 use Tempest\Http\Method;
 use Tempest\Http\Request;
-use Tempest\Router\RouteConfig;
-use Tempest\Router\ValidateCsrfTokenMiddleware;
+use Tempest\Http\Security\CsrfConfig;
 use Tempest\Storage\Testing\StorageTester;
 
 use function Tempest\Support\Path\normalize;
@@ -51,6 +50,8 @@ abstract class IntegrationTest extends TestCase
 
     protected StorageTester $storage;
 
+    protected CsrfConfig $csrfConfig;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -75,9 +76,8 @@ abstract class IntegrationTest extends TestCase
         $this->vite->preventTagResolution();
         $this->vite->clearCaches();
 
-        $this
-            ->container->get(RouteConfig::class)
-            ->middleware->remove(ValidateCsrfTokenMiddleware::class);
+        $this->csrfConfig = $this->container->get(CsrfConfig::class);
+        $this->csrfConfig->enable = false;
 
         $request = new GenericRequest(Method::GET, '/', []);
         $this->container->singleton(Request::class, fn () => $request);

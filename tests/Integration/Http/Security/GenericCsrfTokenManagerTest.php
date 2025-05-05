@@ -8,7 +8,8 @@ use Override;
 use PHPUnit\Framework\Attributes\Test;
 use Tempest\Clock\Clock;
 use Tempest\Core\FrameworkKernel;
-use Tempest\Http\Security\GenericCsrfTokenManager;
+use Tempest\Http\Security\CsrfConfig;
+use Tempest\Http\Security\CsrfTokenManager;
 use Tempest\Http\Session\Managers\FileSessionManager;
 use Tempest\Http\Session\Session;
 use Tempest\Http\Session\SessionConfig;
@@ -22,7 +23,7 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
 {
     private string $path = __DIR__ . '/../Fixtures/tmp';
 
-    private GenericCsrfTokenManager $genericCsrfTokenManager;
+    private CsrfTokenManager $csrfTokenManager;
 
     #[Override]
     protected function setUp(): void
@@ -42,7 +43,10 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
             ),
         );
 
-        $this->genericCsrfTokenManager = new GenericCsrfTokenManager($this->container->get(Session::class));
+        $this->csrfTokenManager = new CsrfTokenManager(
+            $this->container->get(Session::class),
+            $this->container->get(CsrfConfig::class),
+        );
     }
 
     #[Override]
@@ -56,8 +60,8 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
     #[Test]
     public function generate_token(): void
     {
-        $tokenA = $this->genericCsrfTokenManager->generateToken();
-        $tokenB = $this->genericCsrfTokenManager->generateToken();
+        $tokenA = $this->csrfTokenManager->generateToken();
+        $tokenB = $this->csrfTokenManager->generateToken();
 
         $this->assertNotSame($tokenA, $tokenB);
     }
@@ -65,8 +69,8 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
     #[Test]
     public function get_token(): void
     {
-        $tokenA = $this->genericCsrfTokenManager->getToken();
-        $tokenB = $this->genericCsrfTokenManager->getToken();
+        $tokenA = $this->csrfTokenManager->getToken();
+        $tokenB = $this->csrfTokenManager->getToken();
 
         $this->assertSame($tokenA, $tokenB);
     }
@@ -74,9 +78,9 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
     #[Test]
     public function it_can_refresh_token(): void
     {
-        $token = $this->genericCsrfTokenManager->getToken();
+        $token = $this->csrfTokenManager->getToken();
 
-        $newToken = $this->genericCsrfTokenManager->refreshToken();
+        $newToken = $this->csrfTokenManager->refreshToken();
 
         $this->assertNotSame($token, $newToken);
     }
@@ -84,9 +88,9 @@ final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
     #[Test]
     public function is_token_valid(): void
     {
-        $token = $this->genericCsrfTokenManager->getToken();
+        $token = $this->csrfTokenManager->getToken();
 
-        $isValid = $this->genericCsrfTokenManager->isTokenValid($token);
+        $isValid = $this->csrfTokenManager->isTokenValid($token);
 
         $this->assertTrue($isValid);
     }

@@ -24,7 +24,6 @@ final class RouteConfig
         /** @var Middleware<\Tempest\Router\HttpMiddleware> */
         public Middleware $middleware = new Middleware(
             SetCookieMiddleware::class,
-            ValidateCsrfTokenMiddleware::class,
         ),
     ) {}
 

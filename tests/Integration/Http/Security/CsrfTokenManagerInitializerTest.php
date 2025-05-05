@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Integration\Http\Security;
 
 use PHPUnit\Framework\Attributes\Test;
+use Tempest\Http\Security\CsrfTokenManager;
 use Tempest\Http\Security\CsrfTokenManagerInitializer;
-use Tempest\Http\Security\GenericCsrfTokenManager;
 use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
 
 final class CsrfTokenManagerInitializerTest extends FrameworkIntegrationTestCase
@@ -17,7 +17,7 @@ final class CsrfTokenManagerInitializerTest extends FrameworkIntegrationTestCase
         $initializer = new CsrfTokenManagerInitializer();
 
         $this->assertInstanceOf(
-            GenericCsrfTokenManager::class,
+            CsrfTokenManager::class,
             $initializer->initialize($this->container),
         );
     }

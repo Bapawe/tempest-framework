@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tempest\Router\Exceptions;
+
+use Exception;
+
+final class InvalidCsrfTokenException extends Exception
+{
+    public function __construct()
+    {
+        parent::__construct('Invalid CSRF token');
+    }
+}

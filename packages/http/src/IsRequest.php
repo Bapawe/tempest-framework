@@ -6,6 +6,7 @@ namespace Tempest\Http;
 
 use Tempest\Http\Cookie\Cookie;
 use Tempest\Http\Cookie\CookieManager;
+use Tempest\Http\Security\CsrfTokenManager;
 use Tempest\Http\Session\Session;
 use Tempest\Validation\SkipValidation;
 
@@ -134,5 +135,10 @@ trait IsRequest
     public function hasQuery(string $key): bool
     {
         return has($this->query, $key);
+    }
+
+    public function getCsrfToken(): string
+    {
+        return get(CsrfTokenManager::class)->getToken();
     }
 }

@@ -214,4 +214,9 @@ final class RequestTest extends FrameworkIntegrationTestCase
 
         $this->assertSame($expected, $request->hasBody());
     }
+
+    public function test_csrf_token(): void
+    {
+        $this->markTestSkipped('Not implemented yet');
+    }
 }

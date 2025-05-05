@@ -9,7 +9,7 @@ use Tests\Tempest\Fixtures\Requests\FormRequestA;
 
 final class RequestTestController
 {
-    #[Post('/request-test/form')]
+    #[Post('/request-test/form', middleware: [])]
     public function formAction(FormRequestA $request): Response
     {
         return new Ok()
