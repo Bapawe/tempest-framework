@@ -13,10 +13,6 @@ use Tempest\Router\MatchedRoute;
 #[Singleton]
 final readonly class CsrfMatchedRouteValidator
 {
-    public const string HEADER_NAME = 'X-CSRF-Token';
-
-    public const string PARAM_NAME = '_token';
-
     public function __construct(
         private CsrfConfig $csrfConfig,
         private CsrfTokenManager $csrfTokenManager,
@@ -25,7 +21,7 @@ final readonly class CsrfMatchedRouteValidator
 
     public function shouldValidate(): bool
     {
-        if (! $this->csrfConfig->enable || ! $this->matchedRoute->route->validateCsrfToken) {
+        if (! $this->csrfConfig->enable || ! $this->matchedRoute->route->validateCsrfToken->validate) {
             return false;
         }
 
@@ -38,7 +34,12 @@ final readonly class CsrfMatchedRouteValidator
      */
     public function validate(Request $request): void
     {
-        $value = $request->get(self::PARAM_NAME) ?? $request->headers[self::HEADER_NAME] ?? null;
+        $validateCsrfToken = $this->matchedRoute->route->validateCsrfToken;
+
+        $value = match ($validateCsrfToken->type) {
+            CsrfFieldType::PARAMETER => $request->get($validateCsrfToken->name),
+            CsrfFieldType::HEADER => $request->headers->get($validateCsrfToken->name),
+        };
 
         if ($value === null) {
             throw new CsrfTokenNotFoundException();

@@ -11,6 +11,7 @@ use Tempest\Router\HttpMiddleware;
 use Tempest\Router\Route;
 use Tempest\Router\Routing\Construction\DiscoveredRoute;
 use Tempest\Router\Routing\Construction\MarkedRoute;
+use Tempest\Router\Security\CsrfRouteArgument;
 
 final readonly class FakeRouteBuilder implements Route
 {
@@ -21,7 +22,7 @@ final readonly class FakeRouteBuilder implements Route
         public string $uri = '/',
         /** @var class-string<HttpMiddleware>[] */
         public array $middleware = [],
-        public bool $validateCsrfToken = false,
+        public CsrfRouteArgument $validateCsrfToken = new CsrfRouteArgument(validate: false),
     ) {
         $this->handler = new MethodReflector(new ReflectionMethod($this, 'handler'));
     }

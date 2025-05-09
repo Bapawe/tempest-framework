@@ -6,6 +6,7 @@ namespace Tempest\Router;
 
 use Attribute;
 use Tempest\Http\Method;
+use Tempest\Router\Security\CsrfRouteArgument;
 
 #[Attribute(Attribute::IS_REPEATABLE | Attribute::TARGET_METHOD)]
 final readonly class Options implements Route
@@ -18,7 +19,7 @@ final readonly class Options implements Route
     public function __construct(
         public string $uri,
         public array $middleware = [],
-        public bool $validateCsrfToken = false,
+        public CsrfRouteArgument $validateCsrfToken = new CsrfRouteArgument(validate: false),
     ) {
         $this->method = Method::OPTIONS;
     }

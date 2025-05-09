@@ -8,7 +8,7 @@ final readonly class CsrfRouteArgument
 {
     public function __construct(
         public bool $validate,
-        public string $requestParam = '_token',
-        public string $requestHeader = 'X-CSRF-Token',
+        public CsrfFieldType $type = CsrfFieldType::PARAMETER,
+        public string $name = CsrfFieldType::PARAMETER->value,
     ) {}
 }
