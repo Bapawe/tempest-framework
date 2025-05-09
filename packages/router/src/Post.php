@@ -6,21 +6,13 @@ namespace Tempest\Router;
 
 use Attribute;
 use Tempest\Http\Method;
-use Tempest\Router\Security\CsrfRouteArgument;
 
 #[Attribute(Attribute::IS_REPEATABLE | Attribute::TARGET_METHOD)]
-final readonly class Post implements Route
+final class Post implements Route
 {
-    public Method $method;
+    use IsRoute;
 
-    /**
-     * @param class-string<HttpMiddleware>[] $middleware
-     */
-    public function __construct(
-        public string $uri,
-        public array $middleware = [],
-        public CsrfRouteArgument $validateCsrfToken = new CsrfRouteArgument(validate: true),
-    ) {
-        $this->method = Method::POST;
+    public Method $method {
+        get => Method::POST;
     }
 }
