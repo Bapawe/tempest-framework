@@ -17,7 +17,8 @@ final readonly class Delete implements Route
      */
     public function __construct(
         public string $uri,
-        public array $middleware = [ValidateCsrfTokenMiddleware::class],
+        public array $middleware = [],
+        public bool $validateCsrfToken = true,
     ) {
         $this->method = Method::DELETE;
     }

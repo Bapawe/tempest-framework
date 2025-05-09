@@ -20,4 +20,8 @@ interface Route
     public array $middleware {
         get;
     }
+
+    public bool $validateCsrfToken {
+        get;
+    }
 }

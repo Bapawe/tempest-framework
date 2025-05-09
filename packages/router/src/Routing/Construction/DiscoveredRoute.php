@@ -23,6 +23,7 @@ final readonly class DiscoveredRoute implements Route
             $route->method,
             self::getRouteParams($route->uri),
             $route->middleware,
+            $route->validateCsrfToken,
             $methodReflector,
         );
     }
@@ -35,6 +36,7 @@ final readonly class DiscoveredRoute implements Route
         public array $parameters,
         /** @var class-string<\Tempest\Router\HttpMiddleware>[] */
         public array $middleware,
+        public bool $validateCsrfToken,
         public MethodReflector $handler,
     ) {
         $this->isDynamic = $parameters !== [];

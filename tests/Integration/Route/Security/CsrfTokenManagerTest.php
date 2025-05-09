@@ -2,24 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Tests\Tempest\Integration\Http\Security;
+namespace Integration\Route\Security;
 
 use Override;
 use PHPUnit\Framework\Attributes\Test;
 use Tempest\Clock\Clock;
 use Tempest\Core\FrameworkKernel;
-use Tempest\Http\Security\CsrfConfig;
-use Tempest\Http\Security\CsrfTokenManager;
 use Tempest\Http\Session\Managers\FileSessionManager;
 use Tempest\Http\Session\Session;
 use Tempest\Http\Session\SessionConfig;
 use Tempest\Http\Session\SessionManager;
+use Tempest\Router\Security\CsrfConfig;
+use Tempest\Router\Security\CsrfTokenManager;
 use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
 
 use function Tempest\Support\Filesystem\delete_directory;
 use function Tempest\Support\Filesystem\ensure_directory_empty;
 
-final class GenericCsrfTokenManagerTest extends FrameworkIntegrationTestCase
+final class CsrfTokenManagerTest extends FrameworkIntegrationTestCase
 {
     private string $path = __DIR__ . '/../Fixtures/tmp';
 

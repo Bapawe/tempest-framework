@@ -18,6 +18,7 @@ final readonly class Connect implements Route
     public function __construct(
         public string $uri,
         public array $middleware = [],
+        public bool $validateCsrfToken = false,
     ) {
         $this->method = Method::CONNECT;
     }

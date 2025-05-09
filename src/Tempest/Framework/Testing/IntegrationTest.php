@@ -19,7 +19,7 @@ use Tempest\Framework\Testing\Http\HttpRouterTester;
 use Tempest\Http\GenericRequest;
 use Tempest\Http\Method;
 use Tempest\Http\Request;
-use Tempest\Http\Security\CsrfConfig;
+use Tempest\Router\Security\CsrfConfig;
 use Tempest\Storage\Testing\StorageTester;
 
 use function Tempest\Support\Path\normalize;

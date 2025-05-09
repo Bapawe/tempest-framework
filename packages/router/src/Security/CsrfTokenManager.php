@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tempest\Http\Security;
+namespace Tempest\Router\Security;
 
 use SensitiveParameter;
+use Tempest\Container\Singleton;
 use Tempest\Http\Session\Session;
 
 use function Tempest\Support\Random\secure_string;
 
+#[Singleton]
 final readonly class CsrfTokenManager
 {
     public function __construct(
