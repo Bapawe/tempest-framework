@@ -2,21 +2,14 @@
 
 namespace Tempest\Router;
 
-use Tempest\Http\Method;
 use Tempest\Router\Security\CsrfRouteArgument;
 
 /** @phpstan-require-implements Route */
 trait IsRoute
 {
     public readonly array $middleware;
-    public readonly CsrfRouteArgument $validateCsrfToken;
 
-    public const array STATE_MODIFYING_METHODS = [
-        Method::PATCH,
-        Method::PUT,
-        Method::POST,
-        Method::DELETE,
-    ];
+    public readonly CsrfRouteArgument $validateCsrfToken;
 
     /**
      * @param null|class-string<HttpMiddleware>[] $middleware
@@ -30,15 +23,6 @@ trait IsRoute
         $this->validateCsrfToken = $this->resolveCsrfValidation($validateCsrfToken);
     }
 
-    public function isStateModifyingMethod(): bool
-    {
-        return in_array(
-            needle: $this->method,
-            haystack: self::STATE_MODIFYING_METHODS,
-            strict: true,
-        );
-    }
-
     private function resolveCsrfValidation(CsrfRouteArgument|bool|null $validateCsrfToken): CsrfRouteArgument
     {
         if ($validateCsrfToken instanceof CsrfRouteArgument) {
@@ -47,7 +31,7 @@ trait IsRoute
 
         $shouldValidate = is_bool($validateCsrfToken)
             ? $validateCsrfToken
-            : $this->isStateModifyingMethod();
+            : $this->method->modifiesState();
 
         return new CsrfRouteArgument(validate: $shouldValidate);
     }

@@ -11,7 +11,7 @@ use Tempest\Router\Exceptions\InvalidCsrfTokenException;
 use Tempest\Router\MatchedRoute;
 
 #[Singleton]
-final readonly class CsrfMatchedRouteValidator
+final readonly class CsrfValidator
 {
     public function __construct(
         private CsrfConfig $csrfConfig,

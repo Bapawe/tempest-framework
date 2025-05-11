@@ -17,7 +17,7 @@ use Tempest\Router\HttpMiddlewareCallable;
 final readonly class ValidateCsrfTokenMiddleware implements HttpMiddleware
 {
     public function __construct(
-        private CsrfMatchedRouteValidator $csrfRequestValidator,
+        private CsrfValidator $csrfValidator,
         private AppConfig $appConfig,
     ) {}
 
@@ -26,9 +26,9 @@ final readonly class ValidateCsrfTokenMiddleware implements HttpMiddleware
      */
     public function __invoke(Request $request, HttpMiddlewareCallable $next): Response
     {
-        if ($this->csrfRequestValidator->shouldValidate()) {
+        if ($this->csrfValidator->shouldValidate()) {
             try {
-                $this->csrfRequestValidator->validate($request);
+                $this->csrfValidator->validate($request);
             } catch (CsrfException $csrfValidationException) {
                 if ($this->appConfig->environment->isLocal()) {
                     throw $csrfValidationException;

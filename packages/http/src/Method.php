@@ -15,4 +15,12 @@ enum Method: string
     case OPTIONS = 'OPTIONS';
     case TRACE = 'TRACE';
     case PATCH = 'PATCH';
+
+    public function modifiesState(): bool
+    {
+        return match ($this) {
+            self::PATCH, self::PUT, self::POST, self::DELETE => true,
+            default => false,
+        };
+    }
 }
