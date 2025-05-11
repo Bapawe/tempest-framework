@@ -25,6 +25,8 @@ final class CsrfTokenManagerTest extends FrameworkIntegrationTestCase
 
     private CsrfTokenManager $csrfTokenManager;
 
+    private const string TOKEN_ID = 'csrf_dummy';
+
     #[Override]
     protected function setUp(): void
     {
@@ -69,18 +71,18 @@ final class CsrfTokenManagerTest extends FrameworkIntegrationTestCase
     #[Test]
     public function get_token(): void
     {
-        $tokenA = $this->csrfTokenManager->getToken();
-        $tokenB = $this->csrfTokenManager->getToken();
+        $tokenA = $this->csrfTokenManager->getToken(self::TOKEN_ID);
+        $tokenB = $this->csrfTokenManager->getToken(self::TOKEN_ID);
 
-        $this->assertSame($tokenA, $tokenB);
+        $this->assertEquals($tokenA, $tokenB);
     }
 
     #[Test]
     public function it_can_refresh_token(): void
     {
-        $token = $this->csrfTokenManager->getToken();
+        $token = $this->csrfTokenManager->getToken(self::TOKEN_ID);
 
-        $newToken = $this->csrfTokenManager->refreshToken();
+        $newToken = $this->csrfTokenManager->refreshToken(self::TOKEN_ID);
 
         $this->assertNotSame($token, $newToken);
     }
@@ -88,7 +90,7 @@ final class CsrfTokenManagerTest extends FrameworkIntegrationTestCase
     #[Test]
     public function is_token_valid(): void
     {
-        $token = $this->csrfTokenManager->getToken();
+        $token = $this->csrfTokenManager->getToken(self::TOKEN_ID);
 
         $isValid = $this->csrfTokenManager->isTokenValid($token);
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tempest\Router\Security;
 
-use SensitiveParameter;
 use Tempest\Container\Singleton;
 use Tempest\Http\Session\Session;
 
@@ -23,34 +22,34 @@ final readonly class CsrfTokenManager
         return secure_string(length: $this->config->tokenLength);
     }
 
-    public function getToken(): string
+    public function getToken(string $id): CsrfToken
     {
-        $token = $this->session->get($this->config->tokenId);
+        $value = $this->session->get($id);
 
-        if ($token === null) {
-            $token = $this->generateToken();
+        if ($value === null) {
+            $value = $this->generateToken();
 
-            $this->session->set($this->config->tokenId, $token);
+            $this->session->set($id, $value);
         }
 
-        return $token;
+        return new CsrfToken($id, $value);
     }
 
-    public function refreshToken(): string
+    public function refreshToken(string $id): CsrfToken
     {
         $token = $this->generateToken();
 
         $this->session->set($this->config->tokenId, $token);
 
-        return $token;
+        return new CsrfToken($id, $token);
     }
 
-    public function isTokenValid(#[SensitiveParameter] string $token): bool
+    public function isTokenValid(CsrfToken $token): bool
     {
         if (! $this->config->enable) {
             return true;
         }
 
-        return hash_equals($this->getToken(), $token);
+        return hash_equals($this->getToken($token->id)->value, $token->value);
     }
 }

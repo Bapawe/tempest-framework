@@ -10,5 +10,6 @@ final class CsrfConfig
         public bool $enable = true,
         public string $tokenId = 'csrf_token',
         public int $tokenLength = 40,
+        public string $tokenKey = '_token',
     ) {}
 }

@@ -7,7 +7,7 @@ namespace Tempest\Router\Routing\Construction;
 use Tempest\Http\Method;
 use Tempest\Reflection\MethodReflector;
 use Tempest\Router\Route;
-use Tempest\Router\Security\CsrfRouteArgument;
+use Tempest\Router\Security\ValidateCsrfToken;
 
 final readonly class DiscoveredRoute implements Route
 {
@@ -37,7 +37,7 @@ final readonly class DiscoveredRoute implements Route
         public array $parameters,
         /** @var class-string<\Tempest\Router\HttpMiddleware>[] */
         public array $middleware,
-        public CsrfRouteArgument $validateCsrfToken,
+        public ValidateCsrfToken|bool|null $validateCsrfToken,
         public MethodReflector $handler,
     ) {
         $this->isDynamic = $parameters !== [];

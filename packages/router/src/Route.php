@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tempest\Router;
 
 use Tempest\Http\Method;
-use Tempest\Router\Security\CsrfRouteArgument;
+use Tempest\Router\Security\ValidateCsrfToken;
 
 interface Route
 {
@@ -22,7 +22,7 @@ interface Route
         get;
     }
 
-    public CsrfRouteArgument $validateCsrfToken {
+    public ValidateCsrfToken|bool|null $validateCsrfToken {
         get;
     }
 }
