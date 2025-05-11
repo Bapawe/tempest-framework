@@ -25,12 +25,12 @@ final readonly class CsrfTokenManager
 
     public function getToken(): string
     {
-        $token = $this->session->get($this->config->tokenName);
+        $token = $this->session->get($this->config->tokenId);
 
         if ($token === null) {
             $token = $this->generateToken();
 
-            $this->session->set($this->config->tokenName, $token);
+            $this->session->set($this->config->tokenId, $token);
         }
 
         return $token;
@@ -40,7 +40,7 @@ final readonly class CsrfTokenManager
     {
         $token = $this->generateToken();
 
-        $this->session->set($this->config->tokenName, $token);
+        $this->session->set($this->config->tokenId, $token);
 
         return $token;
     }

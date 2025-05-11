@@ -8,7 +8,7 @@ final class CsrfConfig
 {
     public function __construct(
         public bool $enable = true,
-        public string $tokenName = 'csrf_token',
+        public string $tokenId = 'csrf_token',
         public int $tokenLength = 40,
     ) {}
 }

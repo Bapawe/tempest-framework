@@ -6,7 +6,7 @@ namespace Tempest\Router\Exceptions;
 
 use Exception;
 
-final class CsrfTokenNotFoundException extends Exception
+final class CsrfTokenNotFoundException extends Exception implements CsrfException
 {
     public function __construct()
     {

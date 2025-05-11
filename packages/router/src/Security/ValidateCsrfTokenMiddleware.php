@@ -9,9 +9,9 @@ use Tempest\Core\Priority;
 use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Http\Responses\Forbidden;
+use Tempest\Router\Exceptions\CsrfException;
 use Tempest\Router\HttpMiddleware;
 use Tempest\Router\HttpMiddlewareCallable;
-use Throwable;
 
 #[Priority(Priority::FRAMEWORK)]
 final readonly class ValidateCsrfTokenMiddleware implements HttpMiddleware
@@ -22,14 +22,14 @@ final readonly class ValidateCsrfTokenMiddleware implements HttpMiddleware
     ) {}
 
     /**
-     * @throws Throwable
+     * @throws CsrfException
      */
     public function __invoke(Request $request, HttpMiddlewareCallable $next): Response
     {
         if ($this->csrfRequestValidator->shouldValidate()) {
             try {
                 $this->csrfRequestValidator->validate($request);
-            } catch (Throwable $csrfValidationException) {
+            } catch (CsrfException $csrfValidationException) {
                 if ($this->appConfig->environment->isLocal()) {
                     throw $csrfValidationException;
                 }
