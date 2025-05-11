@@ -9,7 +9,6 @@ use Tempest\Core\Priority;
 use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Http\Responses\Forbidden;
-use Tempest\Router\Exceptions\CsrfException;
 use Tempest\Router\Exceptions\CsrfTokenNotFoundException;
 use Tempest\Router\Exceptions\InvalidCsrfTokenException;
 use Tempest\Router\HttpMiddleware;
@@ -27,9 +26,6 @@ final readonly class ValidateCsrfTokenMiddleware implements HttpMiddleware
         private MatchedRoute $matchedRoute,
     ) {}
 
-    /**
-     * @throws CsrfException
-     */
     public function __invoke(Request $request, HttpMiddlewareCallable $next): Response
     {
         $routeArgument = $this->resolveRouteArgument($this->matchedRoute->route);
