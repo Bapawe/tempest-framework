@@ -12,7 +12,6 @@ use Tempest\Http\Session\Managers\FileSessionManager;
 use Tempest\Http\Session\Session;
 use Tempest\Http\Session\SessionConfig;
 use Tempest\Http\Session\SessionManager;
-use Tempest\Router\Security\CsrfConfig;
 use Tempest\Router\Security\CsrfTokenManager;
 use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
 
@@ -47,7 +46,7 @@ final class CsrfTokenManagerTest extends FrameworkIntegrationTestCase
 
         $this->csrfTokenManager = new CsrfTokenManager(
             $this->container->get(Session::class),
-            $this->container->get(CsrfConfig::class),
+            self::class,
         );
     }
 
@@ -78,7 +77,7 @@ final class CsrfTokenManagerTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function it_can_refresh_token(): void
+    public function refresh_token(): void
     {
         $token = $this->csrfTokenManager->getToken(self::TOKEN_ID);
 

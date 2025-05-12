@@ -6,6 +6,7 @@ namespace Tempest\Auth;
 
 use Tempest\Http\Session\Session;
 use Tempest\Reflection\ClassReflector;
+use Tempest\Router\Security\CsrfTokenManager;
 
 final readonly class SessionAuthenticator implements Authenticator
 {
@@ -14,11 +15,14 @@ final readonly class SessionAuthenticator implements Authenticator
     public function __construct(
         private AuthConfig $authConfig,
         private Session $session,
+        private CsrfTokenManager $csrfTokenManager,
     ) {}
 
     public function login(CanAuthenticate $user): void
     {
         $this->session->set(self::USER_KEY, $user->id);
+
+        $this->csrfTokenManager->clear();
     }
 
     public function logout(): void
