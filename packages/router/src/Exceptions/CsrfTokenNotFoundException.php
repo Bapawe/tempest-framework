@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tempest\Router\Exceptions;
 
-use LogicException;
+use RuntimeException;
 
-final class CsrfTokenNotFoundException extends LogicException implements CsrfException
+final class CsrfTokenNotFoundException extends RuntimeException implements CsrfException
 {
     public function __construct()
     {

@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace Tempest {
     use Tempest\Reflection\MethodReflector;
     use Tempest\Router\Router;
+    use Tempest\Router\Security\CsrfConfig;
+    use Tempest\Router\Security\CsrfToken;
+    use Tempest\Router\Security\CsrfTokenManager;
+    use Tempest\Support\Html\HtmlString;
+
+    use function Tempest\Support\Html\create_tag;
 
     /**
      * Creates a valid URI to the given controller `$action`.
@@ -44,5 +50,34 @@ namespace Tempest {
             $action,
             ...$params,
         );
+    }
+
+    /**
+     * Create a CSRF token form field.
+     */
+    function csrf_field(?string $id = null, ?string $name = null): HtmlString
+    {
+        $csrfConfig = get(CsrfConfig::class);
+
+        return create_tag(
+            'input',
+            [
+                'type' => 'hidden',
+                'name' => $name ?: $csrfConfig->tokenKey,
+                'value' => csrf_token($id),
+                'autocomplete' => 'off',
+            ],
+        );
+    }
+
+    /**
+     * Get the CSRF token.
+     */
+    function csrf_token(?string $id = null): CsrfToken
+    {
+        $csrfTokenManager = get(CsrfTokenManager::class);
+        $csrfConfig = get(CsrfConfig::class);
+
+        return $csrfTokenManager->getToken($id ?? $csrfConfig->tokenId);
     }
 }
