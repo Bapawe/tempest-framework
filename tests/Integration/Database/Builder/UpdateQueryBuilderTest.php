@@ -3,7 +3,8 @@
 namespace Tests\Tempest\Integration\Database\Builder;
 
 use Tempest\Database\Builder\QueryBuilders\UpdateQueryBuilder;
-use Tempest\Database\Exceptions\CannotInsertHasManyRelation;
+use Tempest\Database\Config\DatabaseDialect;
+use Tempest\Database\Database;
 use Tempest\Database\Exceptions\CannotUpdateHasManyRelation;
 use Tempest\Database\Exceptions\CannotUpdateHasOneRelation;
 use Tempest\Database\Exceptions\InvalidUpdateStatement;
@@ -15,7 +16,6 @@ use Tests\Tempest\Fixtures\Migrations\CreatePublishersTable;
 use Tests\Tempest\Fixtures\Modules\Books\Models\Author;
 use Tests\Tempest\Fixtures\Modules\Books\Models\AuthorType;
 use Tests\Tempest\Fixtures\Modules\Books\Models\Book;
-use Tests\Tempest\Fixtures\Modules\Books\Models\Chapter;
 use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
 
 use function Tempest\Database\query;
@@ -32,7 +32,7 @@ final class UpdateQueryBuilderTest extends FrameworkIntegrationTestCase
             ->where('`id` = ?', 10)
             ->build();
 
-        $this->assertSame(
+        $this->assertSameWithoutBackticks(
             <<<SQL
             UPDATE `chapters`
             SET `title` = ?, `index` = ?
@@ -54,7 +54,7 @@ final class UpdateQueryBuilderTest extends FrameworkIntegrationTestCase
             ->allowAll()
             ->build();
 
-        $this->assertSame(
+        $this->assertSameWithoutBackticks(
             <<<SQL
             UPDATE `chapters`
             SET `index` = ?
@@ -87,7 +87,7 @@ final class UpdateQueryBuilderTest extends FrameworkIntegrationTestCase
             ->where('`id` = ?', 10)
             ->build();
 
-        $this->assertSame(
+        $this->assertSameWithoutBackticks(
             <<<SQL
             UPDATE `books`
             SET `title` = ?
@@ -115,7 +115,7 @@ final class UpdateQueryBuilderTest extends FrameworkIntegrationTestCase
             )
             ->build();
 
-        $this->assertSame(
+        $this->assertSameWithoutBackticks(
             <<<SQL
             UPDATE `books`
             SET `title` = ?
@@ -158,7 +158,7 @@ final class UpdateQueryBuilderTest extends FrameworkIntegrationTestCase
             ->update(author: Author::new(name: 'Brent'))
             ->build();
 
-        $this->assertSame(
+        $this->assertSameWithoutBackticks(
             <<<SQL
             UPDATE `books`
             SET `author_id` = ?
@@ -171,11 +171,17 @@ final class UpdateQueryBuilderTest extends FrameworkIntegrationTestCase
 
         $authorQuery = $bookQuery->bindings[0];
 
-        $this->assertSame(
-            <<<SQL
-            INSERT INTO `authors` (`name`)
-            VALUES (?)
-            SQL,
+        $expected = <<<SQL
+        INSERT INTO `authors` (`name`)
+        VALUES (?)
+        SQL;
+
+        if ($this->container->get(Database::class)->dialect === DatabaseDialect::POSTGRESQL) {
+            $expected .= ' RETURNING *';
+        }
+
+        $this->assertSameWithoutBackticks(
+            $expected,
             $authorQuery->toSql(),
         );
 
@@ -192,7 +198,7 @@ final class UpdateQueryBuilderTest extends FrameworkIntegrationTestCase
             ->update(author: Author::new(id: new Id(5), name: 'Brent'))
             ->build();
 
-        $this->assertSame(
+        $this->assertSameWithoutBackticks(
             <<<SQL
             UPDATE `books`
             SET `author_id` = ?
@@ -249,7 +255,7 @@ final class UpdateQueryBuilderTest extends FrameworkIntegrationTestCase
             )
             ->build();
 
-        $this->assertSame(
+        $this->assertSameWithoutBackticks(
             <<<SQL
             UPDATE `chapters`
             SET `title` = ?, `index` = ?
