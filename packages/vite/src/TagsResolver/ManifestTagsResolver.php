@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tempest\Vite\TagsResolver;
 
-use Tempest\Vite\Exceptions\ManifestEntrypointNotFoundException;
+use Tempest\Support\Json;
+use Tempest\Vite\Exceptions\ManifestEntrypointWasNotFoundException;
 use Tempest\Vite\Manifest\Chunk;
 use Tempest\Vite\Manifest\Manifest;
 use Tempest\Vite\PrefetchStrategy;
@@ -31,7 +32,7 @@ final readonly class ManifestTagsResolver implements TagsResolver
                 $path = $this->fileToAssetPath($entrypoint);
 
                 if (! ($chunk = $this->manifest->chunks->get($path))) {
-                    throw new ManifestEntrypointNotFoundException($entrypoint);
+                    throw new ManifestEntrypointWasNotFoundException($entrypoint);
                 }
 
                 return $this->resolveEntryPointTags($chunk);
@@ -176,7 +177,7 @@ final readonly class ManifestTagsResolver implements TagsResolver
             return $assets;
         };
 
-        $assets = json_encode(array_values(array_map(
+        $assets = Json\encode(array_values(array_map(
             callback: fn (array $asset) => array_map('strval', $asset),
             array: array_unique($findPrefetchableAssets($chunk), flags: SORT_REGULAR),
         )));

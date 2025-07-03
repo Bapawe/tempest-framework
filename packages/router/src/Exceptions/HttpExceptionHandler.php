@@ -8,10 +8,11 @@ use Tempest\Core\ExceptionHandler;
 use Tempest\Core\ExceptionReporter;
 use Tempest\Core\Kernel;
 use Tempest\Http\GenericResponse;
-use Tempest\Http\HttpException;
+use Tempest\Http\HttpRequestFailed;
 use Tempest\Http\Response;
 use Tempest\Http\Status;
 use Tempest\Router\ResponseSender;
+use Tempest\Support\Filesystem;
 use Tempest\View\GenericView;
 use Throwable;
 
@@ -32,8 +33,7 @@ final readonly class HttpExceptionHandler implements ExceptionHandler
 
             $response = match (true) {
                 $throwable instanceof ConvertsToResponse => $throwable->toResponse(),
-                $throwable instanceof NotFoundException => $this->renderErrorResponse(Status::NOT_FOUND),
-                $throwable instanceof HttpException => $this->renderErrorResponse($throwable->status, $throwable),
+                $throwable instanceof HttpRequestFailed => $this->renderErrorResponse($throwable->status, $throwable),
                 default => $this->renderErrorResponse(Status::INTERNAL_SERVER_ERROR),
             };
 
@@ -43,12 +43,8 @@ final readonly class HttpExceptionHandler implements ExceptionHandler
         }
     }
 
-    private function renderErrorResponse(Status $status, ?HttpException $exception = null): Response
+    private function renderErrorResponse(Status $status, ?HttpRequestFailed $exception = null): Response
     {
-        if ($exception?->response) {
-            return $exception->response;
-        }
-
         return new GenericResponse(
             status: $status,
             body: new GenericView(__DIR__ . '/HttpErrorResponse/error.view.php', [
@@ -70,6 +66,6 @@ final readonly class HttpExceptionHandler implements ExceptionHandler
 
     private function getStyleSheet(): string
     {
-        return file_get_contents(__DIR__ . '/HttpErrorResponse/style.css');
+        return Filesystem\read_file(__DIR__ . '/HttpErrorResponse/style.css');
     }
 }

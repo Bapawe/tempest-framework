@@ -10,8 +10,6 @@ use function Tempest\get;
 
 final class Session
 {
-    public const string ID = 'tempest_session_id';
-
     public const string VALIDATION_ERRORS = 'validation_errors';
 
     public const string ORIGINAL_VALUES = 'original_values';
@@ -35,6 +33,16 @@ final class Session
     public function flash(string $key, mixed $value): void
     {
         $this->getSessionManager()->set($this->id, $key, new FlashValue($value));
+    }
+
+    public function reflash(): void
+    {
+        foreach ($this->getSessionManager()->all($this->id) as $key => $value) {
+            if (! ($value instanceof FlashValue))
+                continue;
+
+            unset($this->expiredKeys[$key]);
+        }
     }
 
     public function get(string $key, mixed $default = null): mixed

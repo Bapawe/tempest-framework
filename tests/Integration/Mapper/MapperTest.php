@@ -7,7 +7,9 @@ namespace Tests\Tempest\Integration\Mapper;
 use DateTimeImmutable;
 use Tempest\DateTime\DateTime;
 use Tempest\DateTime\DateTimeInterface;
-use Tempest\Mapper\Exceptions\MissingValuesException;
+use Tempest\Mapper\Exceptions\MappingValuesWereMissing;
+use Tempest\Mapper\Mappers\ArrayToObjectMapper;
+use Tempest\Mapper\Mappers\JsonToObjectMapper;
 use Tempest\Mapper\Mappers\ObjectToArrayMapper;
 use Tests\Tempest\Fixtures\Modules\Books\Models\Author;
 use Tests\Tempest\Fixtures\Modules\Books\Models\AuthorType;
@@ -155,9 +157,9 @@ final class MapperTest extends FrameworkIntegrationTestCase
     {
         try {
             make(ObjectWithStrictProperty::class)->from([]);
-        } catch (MissingValuesException $missingValuesException) {
-            $this->assertStringContainsString(': a', $missingValuesException->getMessage());
-            $this->assertStringNotContainsString(': a, b', $missingValuesException->getMessage());
+        } catch (MappingValuesWereMissing $mappingValuesWereMissing) {
+            $this->assertStringContainsString(': a', $mappingValuesWereMissing->getMessage());
+            $this->assertStringNotContainsString(': a, b', $mappingValuesWereMissing->getMessage());
         }
     }
 
@@ -165,8 +167,8 @@ final class MapperTest extends FrameworkIntegrationTestCase
     {
         try {
             make(ObjectWithStrictOnClass::class)->from([]);
-        } catch (MissingValuesException $missingValuesException) {
-            $this->assertStringContainsString(': a, b', $missingValuesException->getMessage());
+        } catch (MappingValuesWereMissing $mappingValuesWereMissing) {
+            $this->assertStringContainsString(': a, b', $mappingValuesWereMissing->getMessage());
         }
     }
 

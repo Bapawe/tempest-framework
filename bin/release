@@ -18,6 +18,10 @@ use Composer\Semver\VersionParser;
 use Tempest\Console\Console;
 use Tempest\Console\ConsoleApplication;
 use Tempest\Console\Exceptions\InterruptException;
+use Tempest\Http\Status;
+use Tempest\HttpClient\HttpClient;
+use Tempest\Support\Json;
+
 use function Tempest\get;
 use function Tempest\Support\arr;
 use function Tempest\Support\str;
@@ -155,8 +159,34 @@ function performPreReleaseChecks(string $remote, string $branch): void
         throw new Exception("You must be on the {$remote}/{$branch} branch to release.");
     }
 
+    if (null === Tempest\env('RELEASE_GITHUB_TOKEN')) {
+        throw new Exception('`RELEASE_GITHUB_TOKEN` environment variable must be set to release.');
+    }
+
     if ($behindCount = trim(shell_exec("git rev-list HEAD..{$remote}/{$branch} --count") ?? '0') !== '0') {
         throw new Exception("Local branch is behind {$remote}/{$branch} by {$behindCount} commits. Please pull first.");
+    }
+}
+
+/** 
+ * Disables the protection ruleset, so the release branch can be pushed to without a pull request.
+ */
+function updateBranchProtection(bool $enabled): void
+{
+    // https://github.com/tempestphp/tempest-framework/settings/rules/1879240
+    $ruleset = '1879240';
+    $token = Tempest\env('RELEASE_GITHUB_TOKEN');
+    $url = "https://api.github.com/repos/tempestphp/tempest-framework/rulesets/{$ruleset}";
+
+    $httpClient = Tempest\get(HttpClient::class);
+    $response = $httpClient->put(
+        uri: $url, 
+        headers: ['Authorization' => "Bearer {$token}"],
+        body: Json\encode(['enforcement' => $enabled ? 'active' : 'disabled'])
+    );
+
+    if ($response->status !== Status::OK) {
+        throw new Exception('Failed to update branch ruleset.');
     }
 }
 
@@ -202,7 +232,7 @@ function suggestNextVersions(string $current): array
     return array_filter([
         'next_alpha' => ! $isBeta ? sprintf('%d.%d.%d-alpha.%d', $major, $minor, $patch, $preRelease + 1) : null,
         'next_beta' => sprintf('%d.%d.%d-beta.%d', $major, $minor, $patch, $isBeta ? ($preRelease + 1) : 1),
-        'next_major' => sprintf('%d.0.0', $major + 1),
+        'next_major' => $isBeta ? sprintf('%d.0.0', $major) : sprintf('%d.0.0', $major + 1),
     ]);
 }
 
@@ -282,10 +312,10 @@ function ensureTagDoesNotExist(string $version): void
 }
 
 /*
-|--------------------------------------------------------------------------
-| Script starts here.
-|--------------------------------------------------------------------------
-*/
+ * |--------------------------------------------------------------------------
+ * | Script starts here.
+ * |--------------------------------------------------------------------------
+ */
 
 try {
     ConsoleApplication::boot();
@@ -313,7 +343,7 @@ try {
 
     if (! $console->confirm("The next tag will be <em>{$tag}</em>. Release?")) {
         $console->error('Cancelled.');
-        exit;
+        exit();
     }
 
     // Bump PHP packages
@@ -337,6 +367,9 @@ try {
         handler: fn () => updateChangelog($version),
     );
 
+    // Disable protection
+    updateBranchProtection(enabled: false);
+
     // Push tags
     $console->task(
         label: 'Releasing',
@@ -359,11 +392,14 @@ try {
         ],
     );
 
+    // Re-enable protection
+    updateBranchProtection(enabled: true);
+
     $console->success(sprintf(
         'Released <em>%1$s</em>. The <href="https://github.com/tempestphp/tempest-framework/releases/tag/%1$s">GitHub release</href> will be created automatically in a few seconds.',
         $tag,
     ));
 
-    exit;
+    exit();
 } catch (InterruptException) {
 }

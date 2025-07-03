@@ -134,11 +134,11 @@ final class GenericLoggerTest extends FrameworkIntegrationTestCase
     }
 
     #[DataProvider('tempestLevelProvider')]
-    public function test_message_logged_emitted(LogLevel $level): void
+    public function test_message_logged_emitted(LogLevel $level, string $_expected): void
     {
         $eventBus = $this->container->get(EventBus::class);
 
-        $eventBus->listen(MessageLogged::class, function (MessageLogged $event) use ($level): void {
+        $eventBus->listen(function (MessageLogged $event) use ($level): void {
             $this->assertSame($level, $event->level);
             $this->assertSame('This is a log message of level: ' . $level->value, $event->message);
             $this->assertSame(['foo' => 'bar'], $event->context);
@@ -146,6 +146,26 @@ final class GenericLoggerTest extends FrameworkIntegrationTestCase
 
         $logger = new GenericLogger(new LogConfig(), $eventBus);
         $logger->log($level, 'This is a log message of level: ' . $level->value, context: ['foo' => 'bar']);
+    }
+
+    public function test_different_log_levels_works(): void
+    {
+        $filePath = __DIR__ . '/logs/tempest.log';
+        $config = new LogConfig(
+            prefix: 'tempest',
+            channels: [
+                new AppendLogChannel($filePath),
+            ],
+        );
+
+        $logger = new GenericLogger($config, $this->container->get(EventBus::class));
+        $logger->critical('critical');
+        $logger->debug('debug');
+
+        $this->assertFileExists($filePath);
+        $content = file_get_contents($filePath);
+        $this->assertStringContainsString('critical', $content);
+        $this->assertStringContainsString('debug', $content);
     }
 
     public static function tempestLevelProvider(): array
