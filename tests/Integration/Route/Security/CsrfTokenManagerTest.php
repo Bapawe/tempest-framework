@@ -35,7 +35,6 @@ final class CsrfTokenManagerTest extends FrameworkIntegrationTestCase
 
         $this->container->get(FrameworkKernel::class)->internalStorage = realpath($this->path);
 
-        $this->container->config(new SessionConfig(path: 'sessions'));
         $this->container->singleton(
             SessionManager::class,
             fn () => new FileSessionManager(
