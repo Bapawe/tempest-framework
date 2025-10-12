@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Tempest\Auth\Installer;
 
 use Symfony\Component\Process\Process;
-use Tempest\Auth\OAuth\SupportedOAuthProvider;
 use Tempest\Auth\OAuth\Config;
+use Tempest\Auth\OAuth\SupportedOAuthProvider;
 use Tempest\Core\Installer;
 use Tempest\Core\PublishesFiles;
 use Tempest\Reflection\ClassReflector;
+use Tempest\Support\Arr\ImmutableArray;
 use Tempest\Support\Str\ImmutableString;
 
 use function Tempest\root_path;
@@ -17,6 +18,7 @@ use function Tempest\src_path;
 use function Tempest\Support\arr;
 use function Tempest\Support\Filesystem\read_file;
 use function Tempest\Support\Namespace\to_fqcn;
+use function Tempest\Support\str;
 
 final class OAuthInstaller implements Installer
 {
@@ -26,24 +28,21 @@ final class OAuthInstaller implements Installer
 
     public function install(): void
     {
-        /** @var list<SupportedOAuthProvider> $providers */
-        $providers = $this->ask(
+        $providers = arr($this->ask(
             question: 'Please choose an OAuth provider',
             options: SupportedOAuthProvider::cases(),
             multiple: true,
-        );
+        ));
 
-        foreach ($providers as $provider) {
+        $providers->each(function (SupportedOAuthProvider $provider) {
             $controller = $this->publishController($provider);
 
             $this->publishConfig($provider, $controller);
 
             $this->publishImports();
-        }
+        });
 
-        $this->installComposerDependencies(...$providers);
-
-        $providers = arr($providers);
+        $this->installComposerDependencies($providers);
 
         if ($providers->isNotEmpty()) {
             $installedProviders = $providers
@@ -55,7 +54,9 @@ final class OAuthInstaller implements Installer
                 ->map(fn (string $file) => "<style=\"fg-green\">→</style> {$file}");
 
             $this->console->instructions([
-                "<strong>OAuth providers ({$installedProviders}) are installed in your project</strong>!",
+                "<strong>OAuth providers ({$installedProviders}) are installed in your project</strong>",
+                PHP_EOL,
+                'Add the OAuth provider config values to your .env file and validate the published controllers.',
                 PHP_EOL,
                 '<strong>Published files</strong>',
                 ...$publishedFiles,
@@ -85,10 +86,10 @@ final class OAuthInstaller implements Installer
                 $controllerFqcn = $controller !== false ? to_fqcn($controller, root: root_path()) : '';
 
                 $this->update($destination, function (ImmutableString $contents) use ($controllerFqcn): ImmutableString {
-                    return $contents->replace("'{REDIRECT_TO}'", "[{$controllerFqcn}::class, 'redirect']");
+                    return $contents->replace("'{REDIRECT_TO}'", "[{$controllerFqcn}::class, 'callback']");
                 });
 
-                \Tempest\Support\str(read_file($destination))
+                str(read_file($destination))
                     ->matchAll("/'OAUTH_[^']*'/")
                     ->each(function (array $match) use ($destination) {
                         $this->update(
@@ -134,7 +135,7 @@ final class OAuthInstaller implements Installer
             SupportedOAuthProvider::SLACK => Config\SlackOAuthConfig::class,
         };
 
-        $filePrefix = \Tempest\Support\str(new ClassReflector($configFqcn)->getShortName())
+        $filePrefix = str(new ClassReflector($configFqcn)->getShortName())
             ->stripEnd('OAuthConfig')
             ->toString();
 
@@ -145,17 +146,17 @@ final class OAuthInstaller implements Installer
                 $this->update(
                     path: $destination,
                     callback: fn (ImmutableString $contents): ImmutableString => $contents->replace(
-                        search: ['{ROUTE}', '{COLUMN_PREFIX}'],
-                        replace: [$provider->value, $provider->value],
+                        search: ['SupportedOAuthProvider::GENERIC', '{ROUTE}', '{COLUMN_PREFIX}'],
+                        replace: ["SupportedOAuthProvider::{$provider->name}", $provider->value, $provider->value],
                     ),
                 );
             },
         );
     }
 
-    private function installComposerDependencies(SupportedOAuthProvider ...$providers): void
+    private function installComposerDependencies(ImmutableArray $providers): void
     {
-        $packages = arr($providers)
+        $packages = $providers
             ->map(fn (SupportedOAuthProvider $provider) => match ($provider) {
                 SupportedOAuthProvider::APPLE => 'patrickbussmann/oauth2-apple',
                 SupportedOAuthProvider::DISCORD => 'wohali/oauth2-discord-new',

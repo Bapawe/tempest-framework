@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use Tempest\Auth\OAuth\Config\InstagramOAuthConfig;
+use Tempest\Auth\OAuth\SupportedOAuthProvider;
 
 return new InstagramOAuthConfig(
     clientId: 'OAUTH_INSTAGRAM_CLIENT_ID',
     clientSecret: 'OAUTH_INSTAGRAM_CLIENT_SECRET',
     redirectTo: '{REDIRECT_TO}',
+    tag: SupportedOAuthProvider::INSTAGRAM,
 );
