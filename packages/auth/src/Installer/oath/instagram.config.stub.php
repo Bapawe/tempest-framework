@@ -6,6 +6,6 @@ use Tempest\Auth\OAuth\Config\InstagramOAuthConfig;
 
 return new InstagramOAuthConfig(
     clientId: 'OAUTH_INSTAGRAM_CLIENT_ID',
-    clientSecret: 'OAUTH_INSTAGRAM_CLIENT_ID',
-    redirectTo: '',
+    clientSecret: 'OAUTH_INSTAGRAM_CLIENT_SECRET',
+    redirectTo: '{REDIRECT_TO}',
 );

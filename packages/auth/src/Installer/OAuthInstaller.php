@@ -14,6 +14,7 @@ use Tempest\Support\Str\ImmutableString;
 use function Tempest\root_path;
 use function Tempest\src_path;
 use function Tempest\Support\Filesystem\read_file;
+use function Tempest\Support\Namespace\to_fqcn;
 
 final class OAuthInstaller implements Installer
 {
@@ -31,9 +32,9 @@ final class OAuthInstaller implements Installer
         );
 
         foreach ($providers as $provider) {
-            $this->publishConfig($provider);
+            $controller = $this->publishController($provider);
 
-            $this->publishController($provider);
+            $this->publishConfig($provider, $controller);
 
             $this->publishImports();
         }
@@ -42,7 +43,7 @@ final class OAuthInstaller implements Installer
         // install the required league dependencies
     }
 
-    public function publishConfig(AvailableOAuthProvider $provider): void
+    public function publishConfig(AvailableOAuthProvider $provider, string|false $controller): void
     {
         $configStub = match ($provider) {
             AvailableOAuthProvider::APPLE => __DIR__ . '/oath/apple.config.stub.php',
@@ -50,7 +51,7 @@ final class OAuthInstaller implements Installer
             AvailableOAuthProvider::FACEBOOK => __DIR__ . '/oath/facebook.config.stub.php',
             AvailableOAuthProvider::GENERIC => __DIR__ . '/oath/generic.config.stub.php',
             AvailableOAuthProvider::GITHUB => __DIR__ . '/oath/github.config.stub.php',
-            AvailableOAuthProvider::GOOGLE => __DIR__ . '/oauth/google.config.stub.php',
+            AvailableOAuthProvider::GOOGLE => __DIR__ . '/oath/google.config.stub.php',
             AvailableOAuthProvider::INSTAGRAM => __DIR__ . '/oath/instagram.config.stub.php',
             AvailableOAuthProvider::LINKEDIN => __DIR__ . '/oath/linkedin.config.stub.php',
             AvailableOAuthProvider::MICROSOFT => __DIR__ . '/oath/microsoft.config.stub.php',
@@ -60,41 +61,45 @@ final class OAuthInstaller implements Installer
         $this->publish(
             source: $configStub,
             destination: src_path("OAuth/{$provider->value}.config.php"),
-            callback: function (string $source, string $destination) {
-                $matches = \Tempest\Support\str(read_file($destination))->matchAll("/'OAUTH_[^']*'/");
+            callback: function (string $source, string $destination) use ($controller): void {
+                $controllerFqcn = $controller !== false ? to_fqcn($controller, root: root_path()) : '';
 
-                $matches->each(function (array $match) use ($destination) {
-                    $this->update(
-                        path: $destination,
-                        callback: fn (ImmutableString $contents): ImmutableString => $contents->replace(
-                            $match[0],
-                            "\\Tempest\\env({$match[0]})",
-                        ),
-                    );
+                $this->update($destination, function (ImmutableString $contents) use ($controllerFqcn): ImmutableString {
+                    return $contents->replace("'{REDIRECT_TO}'", "[{$controllerFqcn}::class, 'redirect']");
                 });
 
-                $matches->each(function (array $match) {
-                    foreach ([root_path('.env'), root_path('.env.example')] as $envPath) {
+                \Tempest\Support\str(read_file($destination))
+                    ->matchAll("/'OAUTH_[^']*'/")
+                    ->each(function (array $match) use ($destination) {
                         $this->update(
-                            $envPath,
-                            function (ImmutableString $contents) use ($match): ImmutableString {
-                                $envValueName = trim($match[0], "'");
-
-                                if ($contents->contains($envValueName)) {
-                                    return $contents;
-                                }
-
-                                return $contents->append(PHP_EOL . "{$envValueName}=");
-                            },
-                            ignoreNonExisting: true,
+                            path: $destination,
+                            callback: fn (ImmutableString $contents): ImmutableString => $contents->replace(
+                                $match[0],
+                                "\\Tempest\\env({$match[0]})",
+                            ),
                         );
-                    }
-                });
+
+                        foreach ([root_path('.env'), root_path('.env.example')] as $envPath) {
+                            $this->update(
+                                $envPath,
+                                function (ImmutableString $contents) use ($match): ImmutableString {
+                                    $envValueName = trim($match[0], "'");
+
+                                    if ($contents->contains($envValueName)) {
+                                        return $contents;
+                                    }
+
+                                    return $contents->append(PHP_EOL . "{$envValueName}=");
+                                },
+                                ignoreNonExisting: true,
+                            );
+                        }
+                    });
             },
         );
     }
 
-    public function publishController(AvailableOAuthProvider $provider): void
+    public function publishController(AvailableOAuthProvider $provider): string|false
     {
         $configFqcn = match ($provider) {
             AvailableOAuthProvider::APPLE => Config\AppleOAuthConfig::class,
@@ -113,7 +118,7 @@ final class OAuthInstaller implements Installer
             ->stripEnd('OAuthConfig')
             ->toString();
 
-        $this->publish(
+        return $this->publish(
             source: __DIR__ . '/oath/OAuthController.stub.php',
             destination: src_path("OAuth/{$filePrefix}Controller.php"),
             callback: function (string $source, string $destination) use ($provider): void {
