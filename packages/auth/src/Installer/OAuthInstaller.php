@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tempest\Auth\Installer;
 
 use Symfony\Component\Process\Process;
-use Tempest\Auth\OAuth\AvailableOAuthProvider;
+use Tempest\Auth\OAuth\SupportedOAuthProvider;
 use Tempest\Auth\OAuth\Config;
 use Tempest\Core\Installer;
 use Tempest\Core\PublishesFiles;
@@ -15,7 +15,6 @@ use Tempest\Support\Str\ImmutableString;
 use function Tempest\root_path;
 use function Tempest\src_path;
 use function Tempest\Support\arr;
-use function Tempest\Support\Arr\to_array;
 use function Tempest\Support\Filesystem\read_file;
 use function Tempest\Support\Namespace\to_fqcn;
 
@@ -27,10 +26,10 @@ final class OAuthInstaller implements Installer
 
     public function install(): void
     {
-        /** @var list<AvailableOAuthProvider> $providers */
+        /** @var list<SupportedOAuthProvider> $providers */
         $providers = $this->ask(
             question: 'Please choose an OAuth provider',
-            options: AvailableOAuthProvider::cases(),
+            options: SupportedOAuthProvider::cases(),
             multiple: true,
         );
 
@@ -48,7 +47,7 @@ final class OAuthInstaller implements Installer
 
         if ($providers->isNotEmpty()) {
             $installedProviders = $providers
-                ->map(fn (AvailableOAuthProvider $provider) => $provider->value)
+                ->map(fn (SupportedOAuthProvider $provider) => $provider->value)
                 ->implode(', ')
                 ->toString();
 
@@ -64,19 +63,19 @@ final class OAuthInstaller implements Installer
         }
     }
 
-    public function publishConfig(AvailableOAuthProvider $provider, string|false $controller): void
+    public function publishConfig(SupportedOAuthProvider $provider, string|false $controller): void
     {
         $configStub = match ($provider) {
-            AvailableOAuthProvider::APPLE => __DIR__ . '/oath/apple.config.stub.php',
-            AvailableOAuthProvider::DISCORD => __DIR__ . '/oath/discord.config.stub.php',
-            AvailableOAuthProvider::FACEBOOK => __DIR__ . '/oath/facebook.config.stub.php',
-            AvailableOAuthProvider::GENERIC => __DIR__ . '/oath/generic.config.stub.php',
-            AvailableOAuthProvider::GITHUB => __DIR__ . '/oath/github.config.stub.php',
-            AvailableOAuthProvider::GOOGLE => __DIR__ . '/oath/google.config.stub.php',
-            AvailableOAuthProvider::INSTAGRAM => __DIR__ . '/oath/instagram.config.stub.php',
-            AvailableOAuthProvider::LINKEDIN => __DIR__ . '/oath/linkedin.config.stub.php',
-            AvailableOAuthProvider::MICROSOFT => __DIR__ . '/oath/microsoft.config.stub.php',
-            AvailableOAuthProvider::SLACK => __DIR__ . '/oath/slack.config.stub.php',
+            SupportedOAuthProvider::APPLE => __DIR__ . '/oath/apple.config.stub.php',
+            SupportedOAuthProvider::DISCORD => __DIR__ . '/oath/discord.config.stub.php',
+            SupportedOAuthProvider::FACEBOOK => __DIR__ . '/oath/facebook.config.stub.php',
+            SupportedOAuthProvider::GENERIC => __DIR__ . '/oath/generic.config.stub.php',
+            SupportedOAuthProvider::GITHUB => __DIR__ . '/oath/github.config.stub.php',
+            SupportedOAuthProvider::GOOGLE => __DIR__ . '/oath/google.config.stub.php',
+            SupportedOAuthProvider::INSTAGRAM => __DIR__ . '/oath/instagram.config.stub.php',
+            SupportedOAuthProvider::LINKEDIN => __DIR__ . '/oath/linkedin.config.stub.php',
+            SupportedOAuthProvider::MICROSOFT => __DIR__ . '/oath/microsoft.config.stub.php',
+            SupportedOAuthProvider::SLACK => __DIR__ . '/oath/slack.config.stub.php',
         };
 
         $this->publish(
@@ -120,19 +119,19 @@ final class OAuthInstaller implements Installer
         );
     }
 
-    public function publishController(AvailableOAuthProvider $provider): string|false
+    public function publishController(SupportedOAuthProvider $provider): string|false
     {
         $configFqcn = match ($provider) {
-            AvailableOAuthProvider::APPLE => Config\AppleOAuthConfig::class,
-            AvailableOAuthProvider::DISCORD => Config\DiscordOAuthConfig::class,
-            AvailableOAuthProvider::FACEBOOK => Config\FacebookOAuthConfig::class,
-            AvailableOAuthProvider::GENERIC => Config\GenericOAuthConfig::class,
-            AvailableOAuthProvider::GITHUB => Config\GitHubOAuthConfig::class,
-            AvailableOAuthProvider::GOOGLE => Config\GoogleOAuthConfig::class,
-            AvailableOAuthProvider::INSTAGRAM => Config\InstagramOAuthConfig::class,
-            AvailableOAuthProvider::LINKEDIN => Config\LinkedInOAuthConfig::class,
-            AvailableOAuthProvider::MICROSOFT => Config\MicrosoftOAuthConfig::class,
-            AvailableOAuthProvider::SLACK => Config\SlackOAuthConfig::class,
+            SupportedOAuthProvider::APPLE => Config\AppleOAuthConfig::class,
+            SupportedOAuthProvider::DISCORD => Config\DiscordOAuthConfig::class,
+            SupportedOAuthProvider::FACEBOOK => Config\FacebookOAuthConfig::class,
+            SupportedOAuthProvider::GENERIC => Config\GenericOAuthConfig::class,
+            SupportedOAuthProvider::GITHUB => Config\GitHubOAuthConfig::class,
+            SupportedOAuthProvider::GOOGLE => Config\GoogleOAuthConfig::class,
+            SupportedOAuthProvider::INSTAGRAM => Config\InstagramOAuthConfig::class,
+            SupportedOAuthProvider::LINKEDIN => Config\LinkedInOAuthConfig::class,
+            SupportedOAuthProvider::MICROSOFT => Config\MicrosoftOAuthConfig::class,
+            SupportedOAuthProvider::SLACK => Config\SlackOAuthConfig::class,
         };
 
         $filePrefix = \Tempest\Support\str(new ClassReflector($configFqcn)->getShortName())
@@ -154,20 +153,20 @@ final class OAuthInstaller implements Installer
         );
     }
 
-    private function installComposerDependencies(AvailableOAuthProvider ...$providers): void
+    private function installComposerDependencies(SupportedOAuthProvider ...$providers): void
     {
         $packages = arr($providers)
-            ->map(fn (AvailableOAuthProvider $provider) => match ($provider) {
-                AvailableOAuthProvider::APPLE => 'patrickbussmann/oauth2-apple',
-                AvailableOAuthProvider::DISCORD => 'wohali/oauth2-discord-new',
-                AvailableOAuthProvider::FACEBOOK => 'league/oauth2-facebook',
-                AvailableOAuthProvider::GITHUB => 'league/oauth2-github',
-                AvailableOAuthProvider::GOOGLE => 'league/oauth2-google',
-                AvailableOAuthProvider::INSTAGRAM => 'league/oauth2-instagram',
-                AvailableOAuthProvider::LINKEDIN => 'league/oauth2-linkedin',
-                AvailableOAuthProvider::MICROSOFT => 'stevenmaguire/oauth2-microsoft',
-                AvailableOAuthProvider::SLACK => 'adam-paterson/oauth2-slack',
-                AvailableOAuthProvider::GENERIC => null,
+            ->map(fn (SupportedOAuthProvider $provider) => match ($provider) {
+                SupportedOAuthProvider::APPLE => 'patrickbussmann/oauth2-apple',
+                SupportedOAuthProvider::DISCORD => 'wohali/oauth2-discord-new',
+                SupportedOAuthProvider::FACEBOOK => 'league/oauth2-facebook',
+                SupportedOAuthProvider::GITHUB => 'league/oauth2-github',
+                SupportedOAuthProvider::GOOGLE => 'league/oauth2-google',
+                SupportedOAuthProvider::INSTAGRAM => 'league/oauth2-instagram',
+                SupportedOAuthProvider::LINKEDIN => 'league/oauth2-linkedin',
+                SupportedOAuthProvider::MICROSOFT => 'stevenmaguire/oauth2-microsoft',
+                SupportedOAuthProvider::SLACK => 'adam-paterson/oauth2-slack',
+                SupportedOAuthProvider::GENERIC => null,
             })
             ->filter();
 

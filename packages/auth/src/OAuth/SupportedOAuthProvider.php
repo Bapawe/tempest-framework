@@ -2,7 +2,7 @@
 
 namespace Tempest\Auth\OAuth;
 
-enum AvailableOAuthProvider: string
+enum SupportedOAuthProvider: string
 {
     case APPLE = 'apple';
     case DISCORD = 'discord';
