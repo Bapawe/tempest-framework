@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tempest\Auth\Installer;
 
+use Symfony\Component\Process\Process;
 use Tempest\Auth\OAuth\AvailableOAuthProvider;
 use Tempest\Auth\OAuth\Config;
 use Tempest\Core\Installer;
@@ -13,6 +14,8 @@ use Tempest\Support\Str\ImmutableString;
 
 use function Tempest\root_path;
 use function Tempest\src_path;
+use function Tempest\Support\arr;
+use function Tempest\Support\Arr\to_array;
 use function Tempest\Support\Filesystem\read_file;
 use function Tempest\Support\Namespace\to_fqcn;
 
@@ -39,8 +42,26 @@ final class OAuthInstaller implements Installer
             $this->publishImports();
         }
 
-        // add empty values in .env.example and .env
-        // install the required league dependencies
+        $this->installComposerDependencies(...$providers);
+
+        $providers = arr($providers);
+
+        if ($providers->isNotEmpty()) {
+            $installedProviders = $providers
+                ->map(fn (AvailableOAuthProvider $provider) => $provider->value)
+                ->implode(', ')
+                ->toString();
+
+            $publishedFiles = arr($this->publishedFiles)
+                ->map(fn (string $file) => "<style=\"fg-green\">→</style> {$file}");
+
+            $this->console->instructions([
+                "<strong>OAuth providers ({$installedProviders}) are installed in your project</strong>!",
+                PHP_EOL,
+                '<strong>Published files</strong>',
+                ...$publishedFiles,
+            ]);
+        }
     }
 
     public function publishConfig(AvailableOAuthProvider $provider, string|false $controller): void
@@ -131,5 +152,31 @@ final class OAuthInstaller implements Installer
                 );
             },
         );
+    }
+
+    private function installComposerDependencies(AvailableOAuthProvider ...$providers): void
+    {
+        $packages = arr($providers)
+            ->map(fn (AvailableOAuthProvider $provider) => match ($provider) {
+                AvailableOAuthProvider::APPLE => 'patrickbussmann/oauth2-apple',
+                AvailableOAuthProvider::DISCORD => 'wohali/oauth2-discord-new',
+                AvailableOAuthProvider::FACEBOOK => 'league/oauth2-facebook',
+                AvailableOAuthProvider::GITHUB => 'league/oauth2-github',
+                AvailableOAuthProvider::GOOGLE => 'league/oauth2-google',
+                AvailableOAuthProvider::INSTAGRAM => 'league/oauth2-instagram',
+                AvailableOAuthProvider::LINKEDIN => 'league/oauth2-linkedin',
+                AvailableOAuthProvider::MICROSOFT => 'stevenmaguire/oauth2-microsoft',
+                AvailableOAuthProvider::SLACK => 'adam-paterson/oauth2-slack',
+                AvailableOAuthProvider::GENERIC => null,
+            })
+            ->filter();
+
+        if ($packages->isNotEmpty()) {
+            if (! $this->confirm('Install composer dependencies?', default: true)) {
+                return;
+            }
+
+            $this->task('Installing composer dependencies...', new Process(['composer', 'require', ...$packages], cwd: root_path()));
+        }
     }
 }
