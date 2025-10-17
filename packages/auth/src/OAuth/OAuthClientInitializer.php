@@ -23,6 +23,10 @@ final class OAuthClientInitializer implements DynamicInitializer
         return $class->getType()->matches(OAuthClient::class);
     }
 
+    /**
+     * @throws OAuthWasNotConfigured
+     * @throws OAuthProviderWasMissing
+     */
     #[Singleton]
     public function initialize(ClassReflector $class, null|string|UnitEnum $tag, Container $container): OAuthClient
     {
@@ -31,9 +35,10 @@ final class OAuthClientInitializer implements DynamicInitializer
         }
 
         $config = $container->get(OAuthConfig::class, $tag);
+        $composerPackage = $config::composerPackage();
 
-        if (! class_exists($config->provider)) {
-            throw new OAuthProviderWasMissing($config->provider);
+        if (! class_exists($config->provider) && $composerPackage !== null) {
+            throw new OAuthProviderWasMissing($config->provider, $composerPackage);
         }
 
         return new GenericOAuthClient(
