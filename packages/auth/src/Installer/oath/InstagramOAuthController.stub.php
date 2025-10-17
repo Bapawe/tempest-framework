@@ -1,6 +1,9 @@
 <?php
 
+namespace Tempest\Auth\Installer\oath;
+
 use Tempest\Auth\Authentication\Authenticatable;
+use Tempest\Auth\Installer\UserModel;
 use Tempest\Auth\OAuth\OAuthClient;
 use Tempest\Auth\OAuth\OAuthUser;
 use Tempest\Auth\OAuth\SupportedOAuthProvider;
@@ -11,28 +14,29 @@ use Tempest\Router\Get;
 
 use function Tempest\Database\query;
 
-final readonly class OAuthController
+final readonly class InstagramOAuthController
 {
     public function __construct(
-        #[Tag(SupportedOAuthProvider::GENERIC)]
+        #[Tag(SupportedOAuthProvider::GITHUB)]
         private OAuthClient $oauth,
-    ) {}
+    ) {
+    }
 
-    #[Get('/auth/{ROUTE}')]
+    #[Get('/auth/github')]
     public function redirect(): Redirect
     {
         return $this->oauth->createRedirect();
     }
 
-    #[Get('/auth/{ROUTE}/callback')]
+    #[Get('/auth/github/callback')]
     public function callback(Request $request): Redirect
     {
         $this->oauth->authenticate(
             request: $request,
-            map: fn (OAuthUser $user): Authenticatable => query(User::class)->updateOrCreate([
-                '{COLUMN_PREFIX}_id' => $user->id,
+            map: fn(OAuthUser $user): Authenticatable => query(UserModel::class)->updateOrCreate([
+                'github_id' => $user->id,
             ], [
-                '{COLUMN_PREFIX}_id' => $user->id,
+                'github_id' => $user->id,
                 'username' => $user->nickname,
                 'email' => $user->email,
             ])

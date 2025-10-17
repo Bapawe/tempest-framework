@@ -63,4 +63,19 @@ final class SlackOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
+
+    public static function configStub(): string
+    {
+        return __DIR__ . '/../../Installer/oath/slack.config.stub.php';
+    }
+
+    public static function controllerStub(): string
+    {
+        return __DIR__ . '/../../Installer/oath/SlackOAuthController.stub.php';
+    }
+
+    public static function composerPackage(): string
+    {
+        return 'adam-paterson/oauth2-slack';
+    }
 }

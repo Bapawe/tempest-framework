@@ -50,4 +50,10 @@ interface OAuthConfig extends HasTag
      * Maps a resource owner to an OAuthUser instance.
      */
     public function mapUser(ObjectFactory $factory, ResourceOwnerInterface $resourceOwner): OAuthUser;
+
+    public static function configStub(): string;
+
+    public static function controllerStub(): string;
+
+    public static function composerPackage(): ?string;
 }

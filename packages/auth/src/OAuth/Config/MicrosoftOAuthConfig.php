@@ -63,4 +63,19 @@ final class MicrosoftOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
+
+    public static function configStub(): string
+    {
+        return __DIR__ . '/../../Installer/oath/microsoft.config.stub.php';
+    }
+
+    public static function controllerStub(): string
+    {
+        return __DIR__ . '/../../Installer/oath/MicrosoftOAuthController.stub.php';
+    }
+
+    public static function composerPackage(): string
+    {
+        return 'stevenmaguire/oauth2-microsoft';
+    }
 }

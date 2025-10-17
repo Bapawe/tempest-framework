@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
+use Tempest\Auth\Installer\oath\GenericOAuthController;
 use Tempest\Auth\OAuth\Config\GenericOAuthConfig;
-use Tempest\Auth\OAuth\SupportedOAuthProvider;
 
 return new GenericOAuthConfig(
     clientId: 'OAUTH_GENERIC_CLIENT_ID',
     clientSecret: 'OAUTH_GENERIC_CLIENT_SECRET',
-    redirectTo: '{REDIRECT_TO}',
+    redirectTo: [GenericOAuthController::class, 'callback'],
     urlAuthorize: 'OAUTH_GENERIC_URL_AUTHORIZE',
     urlAccessToken: 'OAUTH_GENERIC_URL_ACCESS_TOKEN',
     urlResourceOwnerDetails: 'OAUTH_GENERIC_URL_RESOURCE_OWNER_DETAILS',
-    tag: SupportedOAuthProvider::GENERIC,
+    tag: GenericOAuthController::class,
 );

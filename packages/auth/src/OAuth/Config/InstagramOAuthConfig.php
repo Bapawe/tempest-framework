@@ -63,4 +63,19 @@ final class InstagramOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
+
+    public static function configStub(): string
+    {
+        return __DIR__ . '/../../Installer/oath/instagram.config.stub.php';
+    }
+
+    public static function controllerStub(): string
+    {
+        return __DIR__ . '/../../Installer/oath/InstagramOAuthController.stub.php';
+    }
+
+    public static function composerPackage(): string
+    {
+        return 'league/oauth2-instagram';
+    }
 }

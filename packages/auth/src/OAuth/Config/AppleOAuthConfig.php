@@ -75,4 +75,19 @@ final class AppleOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
+
+    public static function configStub(): string
+    {
+        return __DIR__ . '/../../Installer/oath/apple.config.stub.php';
+    }
+
+    public static function controllerStub(): string
+    {
+        return __DIR__ . '/../../Installer/oath/AppleOAuthController.stub.php';
+    }
+
+    public static function composerPackage(): string
+    {
+        return 'patrickbussmann/oauth2-apple';
+    }
 }
