@@ -6,7 +6,6 @@ use Tempest\Auth\Authentication\Authenticatable;
 use Tempest\Auth\Installer\UserModel;
 use Tempest\Auth\OAuth\OAuthClient;
 use Tempest\Auth\OAuth\OAuthUser;
-use Tempest\Auth\OAuth\SupportedOAuthProvider;
 use Tempest\Container\Tag;
 use Tempest\Http\Request;
 use Tempest\Http\Responses\Redirect;
@@ -17,7 +16,7 @@ use function Tempest\Database\query;
 final readonly class DiscordOAuthController
 {
     public function __construct(
-        #[Tag(SupportedOAuthProvider::GITHUB)]
+        #[Tag(self::class)]
         private OAuthClient $oauth,
     ) {
     }
