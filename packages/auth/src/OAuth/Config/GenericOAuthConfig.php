@@ -82,18 +82,8 @@ final class GenericOAuthConfig implements OAuthConfig
             ->to(OAuthUser::class);
     }
 
-    public static function configStub(): string
+    public static function composerPackage(): string
     {
-        return __DIR__ . '/../../Installer/oath/generic.config.stub.php';
-    }
-
-    public static function controllerStub(): string
-    {
-        return __DIR__ . '/../../Installer/oath/GenericOAuthController.stub.php';
-    }
-
-    public static function composerPackage(): ?string
-    {
-        return null;
+        return '';
     }
 }

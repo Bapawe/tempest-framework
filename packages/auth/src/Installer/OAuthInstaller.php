@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Tempest\Auth\Installer;
 
 use Symfony\Component\Process\Process;
-use Tempest\Auth\AuthConfig;
 use Tempest\Auth\OAuth\SupportedOAuthProvider;
 use Tempest\Core\Installer;
 use Tempest\Core\PublishesFiles;
-use Tempest\Support\Arr\ImmutableArray;
 use Tempest\Support\Filesystem\Exceptions\PathWasNotFound;
 use Tempest\Support\Filesystem\Exceptions\PathWasNotReadable;
 use Tempest\Support\Str\ImmutableString;
@@ -18,6 +16,7 @@ use function Tempest\root_path;
 use function Tempest\src_path;
 use function Tempest\Support\arr;
 use function Tempest\Support\Filesystem\read_file;
+use function Tempest\Support\Namespace\to_fqcn;
 use function Tempest\Support\str;
 
 final class OAuthInstaller implements Installer
@@ -26,85 +25,90 @@ final class OAuthInstaller implements Installer
 
     private(set) string $name = 'oauth';
 
-    public function __construct(
-        private readonly AuthConfig $authConfig,
-    ) {}
-
     public function install(): void
     {
-        $providers = arr($this->ask(
+        $providers = $this->ask(
             question: 'Please choose an OAuth provider',
-            options: array_map(fn (SupportedOAuthProvider $provider) => $provider->name, $this->authConfig->supportedOAuthProviders),
+            options: SupportedOAuthProvider::cases(),
             multiple: true,
-        ))->map(fn (string $name) => $this->authConfig->supportedOAuthProviders[$name]);
+        );
 
-        $providers->each(function (SupportedOAuthProvider $provider) {
+        foreach ($providers as $provider) {
             $this->publishController($provider);
 
             $this->publishConfig($provider);
 
             $this->publishImports();
-        });
 
-        $this->installComposerDependencies($providers);
-
-        if ($providers->isNotEmpty()) {
-            $installedProviders = $providers
-                ->map(fn (SupportedOAuthProvider $provider) => $provider->name)
-                ->implode(', ')
-                ->toString();
-
-            $publishedFiles = arr($this->publishedFiles)
-                ->map(fn (string $file) => '<style="fg-green">→</style>' . $file);
-
-            $this->console->instructions([
-                "<strong>OAuth providers ({$installedProviders}) are installed in your project</strong>",
-                PHP_EOL,
-                'Add the OAuth provider config values to your .env file and validate the published controllers.',
-                PHP_EOL,
-                '<strong>Published files</strong>',
-                ...$publishedFiles,
-            ]);
+            $this->installComposerDependencies($provider);
         }
+
+        $installedProviders = arr($providers)
+            ->map(fn (SupportedOAuthProvider $provider) => $provider->value)
+            ->implode(', ')
+            ->toString();
+
+        $publishedFiles = arr($this->publishedFiles)
+            ->map(fn (string $file) => '<style="fg-green">→</style>' . $file);
+
+        $this->console->instructions([
+            "<strong>OAuth providers ({$installedProviders}) are installed in your project</strong>",
+            PHP_EOL,
+            'Add the OAuth provider config values to your .env file and validate the published controllers.',
+            PHP_EOL,
+            '<strong>Published files</strong>',
+            ...$publishedFiles,
+        ]);
     }
 
     public function publishConfig(SupportedOAuthProvider $provider): void
     {
         $this->publish(
-            source: $provider->configStub,
-            destination: src_path('OAuth/' . strtolower($provider->name) . '.config.php'),
+            source: $provider->configStub(),
+            destination: src_path("OAuth/{$provider->value}.config.php"),
             callback: fn (string $source, string $destination) => $this->updateEnv($destination),
         );
     }
 
     public function publishController(SupportedOAuthProvider $provider): string|false
     {
+        $providerFqcn = $provider::class;
+
         return $this->publish(
-            source: $provider->controllerStub,
-            destination: src_path("OAuth/{$provider->name}OAuthController.php"),
+            source: __DIR__ . '/oath/OAuthControllerStub.php',
+            destination: src_path("OAuth/{$provider->value}OAuthController.php"),
+            callback: function (string $source, string $destination) use ($providerFqcn, $provider) {
+                $this->update(
+                    $destination,
+                    fn (ImmutableString $contents) => $contents->replace(
+                        search: ['tag_name', 'redirect-route', 'callback-route', 'user-model-fqcn', 'provider_db_column'],
+                        replace: [
+                            "\{$providerFqcn}::{$provider->name}",
+                            "/auth/{$provider->value}",
+                            "/auth/{$provider->value}/callback",
+                            to_fqcn($this->ask('Model file path'), root_path()),
+                            "{$provider->value}_id",
+                        ],
+                    ),
+                );
+            },
         );
     }
 
-    private function installComposerDependencies(ImmutableArray $providers): void
+    private function installComposerDependencies(SupportedOAuthProvider $provider): void
     {
-        $packages = $providers
-            ->map(fn (SupportedOAuthProvider $provider) => $provider->composerPackage)
-            ->filter();
+        $package = $provider->composerPackage();
 
-        if ($packages->isNotEmpty()) {
-            if (! $this->confirm('Install composer dependencies?', default: true)) {
-                return;
-            }
-
-            $this->task('Installing composer dependencies...', new Process(['composer', 'require', ...$packages], cwd: root_path()));
+        if (! $this->confirm("Install composer dependency {$package}?", default: true)) {
+            return;
         }
+
+        $this->task("Installing composer dependency {$package}", new Process(['composer', 'require', $package], cwd: root_path()));
     }
 
     /**
-     * @param string $destination
-     * @return void
-     * @throws PathWasNotFound
      * @throws PathWasNotReadable
+     * @throws PathWasNotFound
      */
     private function updateEnv(string $destination): void
     {
@@ -129,7 +133,12 @@ final class OAuthInstaller implements Installer
                                 return $contents;
                             }
 
-                            return $contents->append(PHP_EOL . $envValueName . '=');
+                            $value = str($envValueName)
+                                ->snake()
+                                ->lower()
+                                ->prepend('your_');
+
+                            return $contents->append(PHP_EOL, "{$envValueName}={$value}");
                         },
                         ignoreNonExisting: true,
                     );

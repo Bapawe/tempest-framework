@@ -37,7 +37,7 @@ final class OAuthClientInitializer implements DynamicInitializer
         $config = $container->get(OAuthConfig::class, $tag);
         $composerPackage = $config::composerPackage();
 
-        if (! class_exists($config->provider) && $composerPackage !== null) {
+        if (! class_exists($config->provider)) {
             throw new OAuthProviderWasMissing($config->provider, $composerPackage);
         }
 

@@ -7,7 +7,6 @@ namespace Tempest\Auth;
 use Tempest\Auth\AccessControl\Policy;
 use Tempest\Auth\Authentication\Authenticatable;
 use Tempest\Auth\Exceptions\PolicyWasInvalid;
-use Tempest\Auth\OAuth\SupportedOAuthProvider;
 use Tempest\Reflection\MethodReflector;
 use Tempest\Support\Arr;
 use Tempest\Support\Str;
@@ -17,12 +16,10 @@ final class AuthConfig
     /**
      * @param array<class-string<Authenticatable>> $authenticatables
      * @param array<class-string,array<string,MethodReflector[]>> $policies
-     * @param array<string, SupportedOAuthProvider> $supportedOAuthProviders
      */
     public function __construct(
         public array $authenticatables = [],
         public array $policies = [],
-        public array $supportedOAuthProviders = [],
     ) {}
 
     public function registerPolicy(MethodReflector $handler, Policy $policy): self

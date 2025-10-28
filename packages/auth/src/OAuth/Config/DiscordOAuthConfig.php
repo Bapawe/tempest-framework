@@ -64,16 +64,6 @@ final class DiscordOAuthConfig implements OAuthConfig
             ->to(OAuthUser::class);
     }
 
-    public static function configStub(): string
-    {
-        return __DIR__ . '/../../Installer/oath/discord.config.stub.php';
-    }
-
-    public static function controllerStub(): string
-    {
-        return __DIR__ . '/../../Installer/oath/DiscordOAuthController.stub.php';
-    }
-
     public static function composerPackage(): string
     {
         return 'wohali/oauth2-discord-new';

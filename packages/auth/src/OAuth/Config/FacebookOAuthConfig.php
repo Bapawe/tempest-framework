@@ -70,16 +70,6 @@ final class FacebookOAuthConfig implements OAuthConfig
             ->to(OAuthUser::class);
     }
 
-    public static function configStub(): string
-    {
-        return __DIR__ . '/../../Installer/oath/facebook.config.stub.php';
-    }
-
-    public static function controllerStub(): string
-    {
-        return __DIR__ . '/../../Installer/oath/FacebookOAuthController.stub.php';
-    }
-
     public static function composerPackage(): string
     {
         return 'league/oauth2-facebook';
