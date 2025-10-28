@@ -61,7 +61,7 @@ final class OAuthInstaller implements Installer
         ]);
     }
 
-    public function publishConfig(SupportedOAuthProvider $provider): void
+    private function publishConfig(SupportedOAuthProvider $provider): void
     {
         $this->publish(
             source: $provider->configStub(),
@@ -70,13 +70,17 @@ final class OAuthInstaller implements Installer
         );
     }
 
-    public function publishController(SupportedOAuthProvider $provider): string|false
+    private function publishController(SupportedOAuthProvider $provider): void
     {
         $providerFqcn = $provider::class;
 
-        return $this->publish(
+        $providerClassName = str($provider->value)
+            ->camel()
+            ->prepend('OAuthController');
+
+        $this->publish(
             source: __DIR__ . '/oath/OAuthControllerStub.php',
-            destination: src_path("OAuth/{$provider->value}OAuthController.php"),
+            destination: src_path("OAuth/{$providerClassName}.php"),
             callback: function (string $source, string $destination) use ($providerFqcn, $provider) {
                 $this->update(
                     $destination,
