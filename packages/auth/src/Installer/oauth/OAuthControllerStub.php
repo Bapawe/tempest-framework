@@ -1,5 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
+namespace Tempest\Auth\Installer\oauth;
+
 use Tempest\Auth\Authentication\Authenticatable;
 use Tempest\Auth\OAuth\OAuthClient;
 use Tempest\Auth\OAuth\OAuthUser;
