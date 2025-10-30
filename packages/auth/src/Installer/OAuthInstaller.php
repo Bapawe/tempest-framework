@@ -66,22 +66,12 @@ final class OAuthInstaller implements Installer
 
     private function publishConfig(SupportedOAuthProvider $provider): false|string
     {
-        $source = match ($provider) {
-            SupportedOAuthProvider::APPLE => __DIR__ . '/../Installer/oath/apple.config.stub.php',
-            SupportedOAuthProvider::DISCORD => __DIR__ . '/../Installer/oath/discord.config.stub.php',
-            SupportedOAuthProvider::FACEBOOK => __DIR__ . '/../Installer/oath/facebook.config.stub.php',
-            SupportedOAuthProvider::GENERIC => __DIR__ . '/../Installer/oath/generic.config.stub.php',
-            SupportedOAuthProvider::GITHUB => __DIR__ . '/../Installer/oath/github.config.stub.php',
-            SupportedOAuthProvider::GOOGLE => __DIR__ . '/../Installer/oath/google.config.stub.php',
-            SupportedOAuthProvider::INSTAGRAM => __DIR__ . '/../Installer/oath/instagram.config.stub.php',
-            SupportedOAuthProvider::LINKEDIN => __DIR__ . '/../Installer/oath/linkedin.config.stub.php',
-            SupportedOAuthProvider::MICROSOFT => __DIR__ . '/../Installer/oath/microsoft.config.stub.php',
-            SupportedOAuthProvider::SLACK => __DIR__ . '/../Installer/oath/slack.config.stub.php',
-        };
+        $providerName = $this->getProviderName($provider);
+        $source = __DIR__ . "/../Installer/oauth/{$providerName}.config.stub.php";
 
         return $this->publish(
             source: $source,
-            destination: src_path("OAuth/{$this->getProviderName($provider)}.config.php"),
+            destination: src_path("OAuth/{$providerName}.config.php"),
         );
     }
 
@@ -89,12 +79,12 @@ final class OAuthInstaller implements Installer
     {
         $fileName = str($provider->value)
             ->classBasename()
-            ->replace('GenericProvider', 'Generic')
+            ->replace('Provider', '')
             ->append('Controller.php')
             ->toString();
 
         return $this->publish(
-            source: __DIR__ . '/oath/OAuthControllerStub.php',
+            source: __DIR__ . '/oauth/OAuthControllerStub.php',
             destination: src_path("OAuth/{$fileName}"),
             callback: function (string $source, string $destination) use ($provider) {
                 $providerName = $this->getProviderName($provider);
@@ -173,10 +163,6 @@ final class OAuthInstaller implements Installer
 
     private function getProviderName(SupportedOAuthProvider $provider): string
     {
-        return str($provider->value)
-            ->classBasename()
-            ->replace('GenericProvider', 'generic')
-            ->lower()
-            ->toString();
+        return strtolower($provider->name);
     }
 }
