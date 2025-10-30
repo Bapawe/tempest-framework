@@ -63,9 +63,4 @@ final class SlackOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
-
-    public static function composerPackage(): string
-    {
-        return 'adam-paterson/oauth2-slack';
-    }
 }

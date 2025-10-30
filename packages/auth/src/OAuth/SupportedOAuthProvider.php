@@ -2,59 +2,43 @@
 
 namespace Tempest\Auth\OAuth;
 
-use Tempest\Auth\OAuth\Config\AppleOAuthConfig;
-use Tempest\Auth\OAuth\Config\DiscordOAuthConfig;
-use Tempest\Auth\OAuth\Config\FacebookOAuthConfig;
-use Tempest\Auth\OAuth\Config\GenericOAuthConfig;
-use Tempest\Auth\OAuth\Config\GitHubOAuthConfig;
-use Tempest\Auth\OAuth\Config\GoogleOAuthConfig;
-use Tempest\Auth\OAuth\Config\InstagramOAuthConfig;
-use Tempest\Auth\OAuth\Config\LinkedInOAuthConfig;
-use Tempest\Auth\OAuth\Config\MicrosoftOAuthConfig;
-use Tempest\Auth\OAuth\Config\SlackOAuthConfig;
+use AdamPaterson\OAuth2\Client\Provider\Slack;
+use League\OAuth2\Client\Provider\Apple;
+use League\OAuth2\Client\Provider\Facebook;
+use League\OAuth2\Client\Provider\GenericProvider;
+use League\OAuth2\Client\Provider\Github;
+use League\OAuth2\Client\Provider\Google;
+use League\OAuth2\Client\Provider\Instagram;
+use League\OAuth2\Client\Provider\LinkedIn;
+use Stevenmaguire\OAuth2\Client\Provider\Microsoft;
+use Wohali\OAuth2\Client\Provider\Discord;
 
 enum SupportedOAuthProvider: string
 {
-    case APPLE = 'apple';
-    case DISCORD = 'discord';
-    case FACEBOOK = 'facebook';
-    case GENERIC = 'generic';
-    case GITHUB = 'github';
-    case GOOGLE = 'google';
-    case INSTAGRAM = 'instagram';
-    case LINKEDIN = 'linkedin';
-    case MICROSOFT = 'microsoft';
-    case SLACK = 'slack';
-
-    public function configStub(): string
-    {
-        return match ($this) {
-            self::APPLE => __DIR__ . '/../Installer/oath/apple.config.stub.php',
-            self::DISCORD => __DIR__ . '/../Installer/oath/discord.config.stub.php',
-            self::FACEBOOK => __DIR__ . '/../Installer/oath/facebook.config.stub.php',
-            self::GENERIC => __DIR__ . '/../Installer/oath/generic.config.stub.php',
-            self::GITHUB => __DIR__ . '/../Installer/oath/github.config.stub.php',
-            self::GOOGLE => __DIR__ . '/../Installer/oath/google.config.stub.php',
-            self::INSTAGRAM => __DIR__ . '/../Installer/oath/instagram.config.stub.php',
-            self::LINKEDIN => __DIR__ . '/../Installer/oath/linkedin.config.stub.php',
-            self::MICROSOFT => __DIR__ . '/../Installer/oath/microsoft.config.stub.php',
-            self::SLACK => __DIR__ . '/../Installer/oath/slack.config.stub.php',
-        };
-    }
+    case APPLE = Apple::class;
+    case DISCORD = Discord::class;
+    case FACEBOOK = Facebook::class;
+    case GENERIC = GenericProvider::class;
+    case GITHUB = Github::class;
+    case GOOGLE = Google::class;
+    case INSTAGRAM = Instagram::class;
+    case LINKEDIN = LinkedIn::class;
+    case MICROSOFT = Microsoft::class;
+    case SLACK = Slack::class;
 
     public function composerPackage(): string
     {
         return match ($this) {
-            self::APPLE => AppleOAuthConfig::composerPackage(),
-            self::DISCORD => DiscordOAuthConfig::composerPackage(),
-            self::FACEBOOK => FacebookOAuthConfig::composerPackage(),
-            self::GENERIC => GenericOAuthConfig::composerPackage(),
-            self::GITHUB => GitHubOAuthConfig::composerPackage(),
-            self::GOOGLE => GoogleOauthConfig::composerPackage(),
-            self::INSTAGRAM => InstagramOAuthConfig::composerPackage(),
-            self::LINKEDIN => LinkedInOAuthConfig::composerPackage(),
-            self::MICROSOFT => MicrosoftOAuthConfig::composerPackage(),
-            self::SLACK => SlackOAuthConfig::composerPackage(),
+            self::APPLE => 'patrickbussmann/oauth2-apple',
+            self::DISCORD => 'wohali/oauth2-discord-new',
+            self::FACEBOOK => 'league/oauth2-facebook',
+            self::GENERIC => '',
+            self::GITHUB => 'league/oauth2-github',
+            self::GOOGLE => 'league/oauth2-google',
+            self::INSTAGRAM => 'league/oauth2-instagram',
+            self::LINKEDIN => 'league/oauth2-linkedin',
+            self::MICROSOFT => 'stevenmaguire/oauth2-microsoft',
+            self::SLACK => 'adam-paterson/oauth2-slack',
         };
     }
 }

@@ -63,9 +63,4 @@ final class MicrosoftOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
-
-    public static function composerPackage(): string
-    {
-        return 'stevenmaguire/oauth2-microsoft';
-    }
 }

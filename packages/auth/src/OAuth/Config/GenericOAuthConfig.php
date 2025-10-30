@@ -81,9 +81,4 @@ final class GenericOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
-
-    public static function composerPackage(): string
-    {
-        return '';
-    }
 }

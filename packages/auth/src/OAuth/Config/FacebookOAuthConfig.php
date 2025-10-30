@@ -69,9 +69,4 @@ final class FacebookOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
-
-    public static function composerPackage(): string
-    {
-        return 'league/oauth2-facebook';
-    }
 }

@@ -75,9 +75,4 @@ final class AppleOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
-
-    public static function composerPackage(): string
-    {
-        return 'patrickbussmann/oauth2-apple';
-    }
 }

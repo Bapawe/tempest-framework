@@ -36,7 +36,10 @@ final class OAuthInstaller implements Installer
         foreach ($providers as $provider) {
             $this->publishController($provider);
 
-            $this->publishConfig($provider);
+            $publishedConfig = $this->publishConfig($provider);
+            if ($publishedConfig !== false && $this->confirm('Update .env file?', default: true)) {
+                $this->updateEnv($publishedConfig);
+            }
 
             $this->publishImports();
 
@@ -44,7 +47,7 @@ final class OAuthInstaller implements Installer
         }
 
         $installedProviders = arr($providers)
-            ->map(fn (SupportedOAuthProvider $provider) => $provider->value)
+            ->map(fn (SupportedOAuthProvider $provider) => $this->getProviderName($provider))
             ->implode(', ')
             ->toString();
 
@@ -61,37 +64,51 @@ final class OAuthInstaller implements Installer
         ]);
     }
 
-    private function publishConfig(SupportedOAuthProvider $provider): void
+    private function publishConfig(SupportedOAuthProvider $provider): false|string
     {
-        $this->publish(
-            source: $provider->configStub(),
-            destination: src_path("OAuth/{$provider->value}.config.php"),
-            callback: fn (string $source, string $destination) => $this->updateEnv($destination),
+        $source = match ($provider) {
+            SupportedOAuthProvider::APPLE => __DIR__ . '/../Installer/oath/apple.config.stub.php',
+            SupportedOAuthProvider::DISCORD => __DIR__ . '/../Installer/oath/discord.config.stub.php',
+            SupportedOAuthProvider::FACEBOOK => __DIR__ . '/../Installer/oath/facebook.config.stub.php',
+            SupportedOAuthProvider::GENERIC => __DIR__ . '/../Installer/oath/generic.config.stub.php',
+            SupportedOAuthProvider::GITHUB => __DIR__ . '/../Installer/oath/github.config.stub.php',
+            SupportedOAuthProvider::GOOGLE => __DIR__ . '/../Installer/oath/google.config.stub.php',
+            SupportedOAuthProvider::INSTAGRAM => __DIR__ . '/../Installer/oath/instagram.config.stub.php',
+            SupportedOAuthProvider::LINKEDIN => __DIR__ . '/../Installer/oath/linkedin.config.stub.php',
+            SupportedOAuthProvider::MICROSOFT => __DIR__ . '/../Installer/oath/microsoft.config.stub.php',
+            SupportedOAuthProvider::SLACK => __DIR__ . '/../Installer/oath/slack.config.stub.php',
+        };
+
+        return $this->publish(
+            source: $source,
+            destination: src_path("OAuth/{$this->getProviderName($provider)}.config.php"),
         );
     }
 
-    private function publishController(SupportedOAuthProvider $provider): void
+    private function publishController(SupportedOAuthProvider $provider): false|string
     {
-        $providerFqcn = $provider::class;
+        $fileName = str($provider->value)
+            ->classBasename()
+            ->replace('GenericProvider', 'Generic')
+            ->append('Controller.php')
+            ->toString();
 
-        $providerClassName = str($provider->value)
-            ->camel()
-            ->prepend('OAuthController');
-
-        $this->publish(
+        return $this->publish(
             source: __DIR__ . '/oath/OAuthControllerStub.php',
-            destination: src_path("OAuth/{$providerClassName}.php"),
-            callback: function (string $source, string $destination) use ($providerFqcn, $provider) {
+            destination: src_path("OAuth/{$fileName}"),
+            callback: function (string $source, string $destination) use ($provider) {
+                $providerName = $this->getProviderName($provider);
+
                 $this->update(
                     $destination,
                     fn (ImmutableString $contents) => $contents->replace(
                         search: ['tag_name', 'redirect-route', 'callback-route', 'user-model-fqcn', 'provider_db_column'],
                         replace: [
-                            "\{$providerFqcn}::{$provider->name}",
-                            "/auth/{$provider->value}",
-                            "/auth/{$provider->value}/callback",
+                            '\\' . $provider::class . '::' . $provider->name,
+                            "/auth/{$providerName}",
+                            "/auth/{$providerName}/callback",
                             to_fqcn($this->ask('Model file path'), root_path()),
-                            "{$provider->value}_id",
+                            "{$providerName}_id",
                         ],
                     ),
                 );
@@ -103,24 +120,28 @@ final class OAuthInstaller implements Installer
     {
         $package = $provider->composerPackage();
 
-        if (! $this->confirm("Install composer dependency {$package}?", default: true)) {
+        if (! $this->confirm("Install composer dependency <em>https://github.com/{$package}</em>?", default: true)) {
             return;
         }
 
         $this->task("Installing composer dependency {$package}", new Process(['composer', 'require', $package], cwd: root_path()));
     }
 
-    /**
-     * @throws PathWasNotReadable
-     * @throws PathWasNotFound
-     */
-    private function updateEnv(string $destination): void
+    private function updateEnv(string $configPath): void
     {
-        str(read_file($destination))
+        try {
+            $publishedConfigContent = str(read_file($configPath));
+        } catch (PathWasNotFound|PathWasNotReadable $e) {
+            $this->error($e->getMessage());
+
+            return;
+        }
+
+        $publishedConfigContent
             ->matchAll("/'OAUTH_[^']*'/")
-            ->each(function (array $match) use ($destination) {
+            ->each(function (array $match) use ($configPath) {
                 $this->update(
-                    path: $destination,
+                    path: $configPath,
                     callback: fn (ImmutableString $contents): ImmutableString => $contents->replace(
                         $match[0],
                         "\\Tempest\\env({$match[0]})",
@@ -148,5 +169,14 @@ final class OAuthInstaller implements Installer
                     );
                 }
             });
+    }
+
+    private function getProviderName(SupportedOAuthProvider $provider): string
+    {
+        return str($provider->value)
+            ->classBasename()
+            ->replace('GenericProvider', 'generic')
+            ->lower()
+            ->toString();
     }
 }

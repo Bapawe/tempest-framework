@@ -63,9 +63,4 @@ final class DiscordOAuthConfig implements OAuthConfig
             ])
             ->to(OAuthUser::class);
     }
-
-    public static function composerPackage(): string
-    {
-        return 'wohali/oauth2-discord-new';
-    }
 }
