@@ -33,8 +33,13 @@ final class OAuthInstaller implements Installer
             multiple: true,
         );
 
+        $userModelFqcn = to_fqcn(
+            path: $this->ask('Model file path', placeholder: src_path('Authentication/User.php')),
+            root: root_path(),
+        );
+
         foreach ($providers as $provider) {
-            $this->publishController($provider);
+            $this->publishController($provider, $userModelFqcn);
 
             $publishedConfig = $this->publishConfig($provider);
             if ($publishedConfig !== false && $this->confirm('Update .env file?', default: true)) {
@@ -75,7 +80,7 @@ final class OAuthInstaller implements Installer
         );
     }
 
-    private function publishController(SupportedOAuthProvider $provider): false|string
+    private function publishController(SupportedOAuthProvider $provider, string $userModelFqcn): false|string
     {
         $fileName = str($provider->value)
             ->classBasename()
@@ -86,7 +91,7 @@ final class OAuthInstaller implements Installer
         return $this->publish(
             source: __DIR__ . '/oauth/OAuthControllerStub.php',
             destination: src_path("OAuth/{$fileName}"),
-            callback: function (string $source, string $destination) use ($provider) {
+            callback: function (string $source, string $destination) use ($provider, $userModelFqcn) {
                 $providerName = $this->getProviderName($provider);
 
                 $this->update(
@@ -97,7 +102,7 @@ final class OAuthInstaller implements Installer
                             '\\' . $provider::class . '::' . $provider->name,
                             "/auth/{$providerName}",
                             "/auth/{$providerName}/callback",
-                            to_fqcn($this->ask('Model file path'), root_path()),
+                            $userModelFqcn,
                             "{$providerName}_id",
                         ],
                     ),

@@ -9,6 +9,6 @@ return new AppleOAuthConfig(
     teamId: 'OAUTH_APPLE_TEAM_ID',
     keyId: 'OAUTH_APPLE_KEY_ID',
     keyFile: 'OAUTH_APPLE_KEY_FILE',
-    redirectTo: [\Tempest\Auth\Installer\oath\OAuthControllerStub::class, 'callback'],
+    redirectTo: [\Tempest\Auth\Installer\oauth\OAuthControllerStub::class, 'callback'],
     tag: \Tempest\Auth\OAuth\SupportedOAuthProvider::APPLE,
 );

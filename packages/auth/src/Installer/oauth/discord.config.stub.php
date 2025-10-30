@@ -7,6 +7,6 @@ use Tempest\Auth\OAuth\Config\DiscordOAuthConfig;
 return new DiscordOAuthConfig(
     clientId: 'OAUTH_DISCORD_CLIENT_ID',
     clientSecret: 'OAUTH_DISCORD_CLIENT_SECRET',
-    redirectTo: [\Tempest\Auth\Installer\oath\OAuthControllerStub::class, 'callback'],
+    redirectTo: [\Tempest\Auth\Installer\oauth\OAuthControllerStub::class, 'callback'],
     tag: \Tempest\Auth\OAuth\SupportedOAuthProvider::DISCORD,
 );

@@ -7,6 +7,6 @@ use Tempest\Auth\OAuth\Config\LinkedInOAuthConfig;
 return new LinkedInOAuthConfig(
     clientId: 'OAUTH_LINKEDIN_CLIENT_ID',
     clientSecret: 'OAUTH_LINKEDIN_CLIENT_SECRET',
-    redirectTo: [\Tempest\Auth\Installer\oath\OAuthControllerStub::class, 'callback'],
+    redirectTo: [\Tempest\Auth\Installer\oauth\OAuthControllerStub::class, 'callback'],
     tag: \Tempest\Auth\OAuth\SupportedOAuthProvider::LINKEDIN,
 );
