@@ -27,32 +27,40 @@ final class OAuthInstaller implements Installer
 
     public function install(): void
     {
-        $providers = $this->ask(
-            question: 'Please choose an OAuth provider',
-            options: SupportedOAuthProvider::cases(),
-            multiple: true,
-        );
+        $providers = $this->getProviders();
 
-        $userModelFqcn = to_fqcn(
-            path: $this->ask('Model file path', placeholder: src_path('Authentication/User.php')),
-            root: root_path(),
-        );
+        if (count($providers) === 0) {
+            return;
+        }
+
+        $userModelFqcn = $this->getUserModelFqcn();
 
         foreach ($providers as $provider) {
             $this->publishController($provider, $userModelFqcn);
 
             $publishedConfig = $this->publishConfig($provider);
-            if ($publishedConfig !== false && $this->confirm('Update .env file?', default: true)) {
+            if ($publishedConfig !== false) {
                 $this->updateEnv($publishedConfig);
             }
-
-            $this->publishImports();
 
             $this->installComposerDependencies($provider);
         }
 
+        $this->publishImports();
+
         $installedProviders = arr($providers)
-            ->map(fn (SupportedOAuthProvider $provider) => $this->getProviderName($provider))
+            ->map(fn (SupportedOAuthProvider $provider) => match ($provider) {
+                SupportedOAuthProvider::APPLE => 'Apple',
+                SupportedOAuthProvider::DISCORD => 'Discord',
+                SupportedOAuthProvider::FACEBOOK => 'Facebook',
+                SupportedOAuthProvider::GENERIC => 'Generic',
+                SupportedOAuthProvider::GITHUB => 'GitHub',
+                SupportedOAuthProvider::GOOGLE => 'Google',
+                SupportedOAuthProvider::INSTAGRAM => 'Instagram',
+                SupportedOAuthProvider::LINKEDIN => 'LinkedIn',
+                SupportedOAuthProvider::MICROSOFT => 'Microsoft',
+                SupportedOAuthProvider::SLACK => 'Slack',
+            })
             ->implode(', ')
             ->toString();
 
@@ -60,10 +68,17 @@ final class OAuthInstaller implements Installer
             ->map(fn (string $file) => '<style="fg-green">→</style>' . $file);
 
         $this->console->instructions([
-            "<strong>OAuth providers ({$installedProviders}) are installed in your project</strong>",
-            PHP_EOL,
-            'Add the OAuth provider config values to your .env file and validate the published controllers.',
-            PHP_EOL,
+            sprintf(
+                '<strong>OAuth %s (%s) %s installed in your project</strong>',
+                count($providers) > 1 ? 'providers' : 'provider',
+                $installedProviders,
+                count($providers) > 1 ? 'are' : 'is',
+            ),
+            '',
+            'Next steps:',
+            '1. Update the .env file with your OAuth credentials',
+            '2. Review and customize the published files if needed',
+            '',
             '<strong>Published files</strong>',
             ...$publishedFiles,
         ]);
@@ -71,12 +86,12 @@ final class OAuthInstaller implements Installer
 
     private function publishConfig(SupportedOAuthProvider $provider): false|string
     {
-        $providerName = $this->getProviderName($provider);
-        $source = __DIR__ . "/../Installer/oauth/{$providerName}.config.stub.php";
+        $name = strtolower($provider->name);
+        $source = __DIR__ . "/../Installer/oauth/{$name}.config.stub.php";
 
         return $this->publish(
             source: $source,
-            destination: src_path("OAuth/{$providerName}.config.php"),
+            destination: src_path("Authentication/OAuth/{$name}.config.php"),
         );
     }
 
@@ -90,20 +105,20 @@ final class OAuthInstaller implements Installer
 
         return $this->publish(
             source: __DIR__ . '/oauth/OAuthControllerStub.php',
-            destination: src_path("OAuth/{$fileName}"),
+            destination: src_path("Authentication/OAuth/{$fileName}"),
             callback: function (string $source, string $destination) use ($provider, $userModelFqcn) {
-                $providerName = $this->getProviderName($provider);
+                $name = strtolower($provider->name);
 
                 $this->update(
                     $destination,
                     fn (ImmutableString $contents) => $contents->replace(
-                        search: ['tag_name', 'redirect-route', 'callback-route', 'user-model-fqcn', 'provider_db_column'],
+                        search: ["'tag_name'", 'redirect-route', 'callback-route', "'user-model-fqcn'", 'provider_db_column'],
                         replace: [
                             '\\' . $provider::class . '::' . $provider->name,
-                            "/auth/{$providerName}",
-                            "/auth/{$providerName}/callback",
-                            $userModelFqcn,
-                            "{$providerName}_id",
+                            "/auth/{$name}",
+                            "/auth/{$name}/callback",
+                            '\\' . $userModelFqcn . '::class',
+                            "{$name}_id",
                         ],
                     ),
                 );
@@ -124,6 +139,10 @@ final class OAuthInstaller implements Installer
 
     private function updateEnv(string $configPath): void
     {
+        if (! $this->confirm('Would you like to add the OAuth config variables to your .env file?', default: true)) {
+            return;
+        }
+
         try {
             $publishedConfigContent = str(read_file($configPath));
         } catch (PathWasNotFound|PathWasNotReadable $e) {
@@ -133,41 +152,53 @@ final class OAuthInstaller implements Installer
         }
 
         $publishedConfigContent
-            ->matchAll("/'OAUTH_[^']*'/")
-            ->each(function (array $match) use ($configPath) {
+            ->matchAll("/env\('(OAUTH_[^']*)'\)/", matches: 1)
+            ->each(function (array $match) {
+                $setting = $match[1];
+
                 $this->update(
-                    path: $configPath,
-                    callback: fn (ImmutableString $contents): ImmutableString => $contents->replace(
-                        $match[0],
-                        "\\Tempest\\env({$match[0]})",
-                    ),
+                    root_path('.env'),
+                    function (ImmutableString $contents) use ($setting): ImmutableString {
+                        if ($contents->contains($setting)) {
+                            return $contents;
+                        }
+
+                        $value = str($setting)
+                            ->snake()
+                            ->lower()
+                            ->prepend('your_');
+
+                        return $contents->append(PHP_EOL, "{$setting}={$value}");
+                    },
+                    ignoreNonExisting: true,
                 );
-
-                foreach ([root_path('.env'), root_path('.env.example')] as $envPath) {
-                    $this->update(
-                        $envPath,
-                        function (ImmutableString $contents) use ($match): ImmutableString {
-                            $envValueName = trim($match[0], "'");
-
-                            if ($contents->contains($envValueName)) {
-                                return $contents;
-                            }
-
-                            $value = str($envValueName)
-                                ->snake()
-                                ->lower()
-                                ->prepend('your_');
-
-                            return $contents->append(PHP_EOL, "{$envValueName}={$value}");
-                        },
-                        ignoreNonExisting: true,
-                    );
-                }
             });
     }
 
-    private function getProviderName(SupportedOAuthProvider $provider): string
+    /**
+     * @return class-string
+     */
+    private function getUserModelFqcn(): string
     {
-        return strtolower($provider->name);
+        $userModelPath = src_path('Authentication/User.php');
+
+        $this->publish(
+            source: __DIR__ . '/basic-user/UserModel.stub.php',
+            destination: $userModelPath,
+        );
+
+        return to_fqcn($userModelPath, root: root_path());
+    }
+
+    /**
+     * @return list<SupportedOAuthProvider>
+     */
+    private function getProviders(): array
+    {
+        return $this->ask(
+            question: 'Please choose an OAuth provider',
+            options: SupportedOAuthProvider::cases(),
+            multiple: true,
+        );
     }
 }
