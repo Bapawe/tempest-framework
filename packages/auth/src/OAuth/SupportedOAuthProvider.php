@@ -26,13 +26,13 @@ enum SupportedOAuthProvider: string
     case MICROSOFT = Microsoft::class;
     case SLACK = Slack::class;
 
-    public function composerPackage(): string
+    public function composerPackage(): ?string
     {
         return match ($this) {
             self::APPLE => 'patrickbussmann/oauth2-apple',
             self::DISCORD => 'wohali/oauth2-discord-new',
             self::FACEBOOK => 'league/oauth2-facebook',
-            self::GENERIC => '',
+            self::GENERIC => null,
             self::GITHUB => 'league/oauth2-github',
             self::GOOGLE => 'league/oauth2-google',
             self::INSTAGRAM => 'league/oauth2-instagram',
