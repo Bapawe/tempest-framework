@@ -1,5 +1,6 @@
 ---
 title: Roadmap
+description: "See what is planned for upcoming Tempest releases and how to get involved with its development."
 ---
 
 Tempest is actively worked on, with the current stable version being 3.x. You can check up what's planned and upcoming by browsing our [milestones on GitHub](https://github.com/tempestphp/tempest-framework/milestones).

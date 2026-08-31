@@ -199,7 +199,7 @@ final class Aircraft implements Bindable
 }
 ```
 
-By default, {b`Tempest\Router\Bindable`} objects are cast to strings when passed into the {b`Tempest\Router\uri()`} function as a route parameter. This means that these objects should implement `Stringable`.
+By default, {b`Tempest\Router\Bindable`} objects are cast to strings when passed into the `Tempest\Router\uri()` function as a route parameter. This means that these objects should implement `Stringable`.
 
 This default behaviour can be overridden by annotating a public property on the object with the {b`\Tempest\Router\IsBindingValue`} attribute:
 
@@ -259,7 +259,7 @@ enum AircraftType: string
 
 ## Generating URIs
 
-Tempest provides a {b`\Tempest\Router\uri()`} function to generate URIs to controller methods. This function accepts the fully-qualified class name of the controller or a callable to a method as its first argument, and named parameters as [the rest of its arguments](https://www.php.net/manual/en/functions.arguments.php#functions.variable-arg-list).
+Tempest provides a `\Tempest\Router\uri()` function to generate URIs to controller methods. This function accepts the fully-qualified class name of the controller or a callable to a method as its first argument, and named parameters as [the rest of its arguments](https://www.php.net/manual/en/functions.arguments.php#functions.variable-arg-list).
 
 ```php
 use function Tempest\Router\uri;
@@ -285,7 +285,7 @@ URI-related methods are also available by injecting the {b`Tempest\Router\UriGen
 
 A signed URI ensures that the URI was not modified after it was created. This is useful for implementing login or unsubscribe links, or other endpoints that need protection against tampering.
 
-To create a signed URI, use the {b`\Tempest\Router\signed_uri()`} function. This function accepts the same arguments as {b`\Tempest\Router\uri()`} and returns the URI with a `signature` parameter:
+To create a signed URI, use the `\Tempest\Router\signed_uri()` function. This function accepts the same arguments as `\Tempest\Router\uri()` and returns the URI with a `signature` parameter:
 
 ```php
 use function Tempest\Router\signed_uri;
@@ -296,7 +296,7 @@ signed_uri(
 );
 ```
 
-Alternatively, {b`\Tempest\Router\temporary_signed_uri()`} can be used to provide a duration after which the signed URI expires, providing an extra layer of security.
+Alternatively, `\Tempest\Router\temporary_signed_uri()` can be used to provide a duration after which the signed URI expires, providing an extra layer of security.
 
 ```php
 use function Tempest\Router\temporary_signed_uri;
@@ -330,7 +330,7 @@ final class PasswordlessAuthenticationController
 
 ### Matching the current URI
 
-To determine whether the current request matches a specific controller action, Tempest provides the {b`\Tempest\Router\is_current_uri()`} function. This function accepts the same arguments as `uri`, and returns a boolean.
+To determine whether the current request matches a specific controller action, Tempest provides the `\Tempest\Router\is_current_uri()` function. This function accepts the same arguments as `uri`, and returns a boolean.
 
 ```php "GET /aircraft/1"
 use function Tempest\Router\is_current_uri;
@@ -355,7 +355,7 @@ Tempest handles this by injecting {b`Tempest\Http\Request`} objects into control
 
 In most situations, the data expected from a request is structured. Clients are expected to send specific values and follow specific rules.
 
-The idiomatic approach is to use request classes. These are classes with public properties that correspond to the data to retrieve from the request. Tempest automatically validates these properties using PHP's type system, in addition to optional [validation attributes](../2-features/03-validation) when needed.
+The idiomatic approach is to use request classes. These are classes with public properties that correspond to the data to retrieve from the request. Tempest automatically validates these properties using PHP's type system, in addition to optional [validation attributes](../2-features/03-validation.md) when needed.
 
 A request class must implement {b`Tempest\Http\Request`} and use the {b`Tempest\Http\IsRequest`} trait, which provides the default implementation.
 
@@ -799,7 +799,7 @@ For simpler use cases or debugging purposes, scalar values and arrays can also b
 
 ### View responses
 
-Returning a view is a shorthand for returning a successful response with that view. The {b`Tempest\view()`} function can be used directly to construct a view.
+Returning a view is a shorthand for returning a successful response with that view. The `Tempest\view()` function can be used directly to construct a view.
 
 ```php app/Aircraft/AircraftController.php
 use Tempest\Router\Get;

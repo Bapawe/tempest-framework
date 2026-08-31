@@ -166,7 +166,7 @@ Tempest provides a different configuration object for each cache provider. Below
 
 ## Testing
 
-By extending {`Tempest\Framework\Testing\IntegrationTest`} from your test case, you gain access to the cache testing utilities through the `cache` property.
+By extending [`IntegrationTest`](https://github.com/tempestphp/tempest-framework/blob/main/src/Tempest/Framework/Testing/IntegrationTest.php) from your test case, you gain access to the cache testing utilities through the `cache` property.
 
 These utilities include a way to replace the cache with a testing implementation, as well as a few assertion methods related to cache items and locks.
 

@@ -407,7 +407,7 @@ final class CreateBooksTable implements MigratesUp
 ```
 
 :::warning
-Currently, the [`IsDatabaseModel`](#the-is-database-model-trait) trait already provides a primary `$id` property. It is therefore not possible to use UUIDs alongside `IsDatabaseModel`.
+Currently, the [`IsDatabaseModel`](#the-%60isdatabasemodel%60-trait) trait already provides a primary `$id` property. It is therefore not possible to use UUIDs alongside `IsDatabaseModel`.
 :::
 
 ### Table names
@@ -644,11 +644,11 @@ $user = User::select()
 ```
 
 :::info
-Unlike {b`#[Virtual]`} which marks computed properties that don't exist in the database, {b`#[Hidden]`} is for real database columns that should be protected from accidental exposure.
+Unlike {b`#[Tempest\Database\Virtual]`} which marks computed properties that don't exist in the database, {b`#[Tempest\Mapper\Hidden]`} is for real database columns that should be protected from accidental exposure.
 :::
 
 :::info
-The {b`#[Hidden]`} attribute also excludes properties from serialization. See the [mapper documentation](../2-features/01-mapper.md#hiding-properties-from-serialization) for more information.
+The {b`#[Tempest\Mapper\Hidden]`} attribute also excludes properties from serialization. See the [mapper documentation](../2-features/01-mapper.md#hiding-properties-from-serialization) for more information.
 :::
 
 ### The `IsDatabaseModel` trait
@@ -802,7 +802,7 @@ Tempest uses migrations to create and update databases across different environm
 
 ### Writing migrations
 
-Classes implementing the {b`Tempest\Database\MigratesUp`} or {b`Tempest\Database\MigratesDown`} interface and `.sql` files are automatically [discovered](../1-essentials/05-discovery) and registered as migrations. These files can be stored anywhere in the application.
+Classes implementing the {b`Tempest\Database\MigratesUp`} or {b`Tempest\Database\MigratesDown`} interface and `.sql` files are automatically [discovered](../1-essentials/05-discovery.md) and registered as migrations. These files can be stored anywhere in the application.
 
 :::code-group
 
@@ -867,7 +867,7 @@ final class CreateBookTable implements MigratesDown
 
 ### Applying migrations
 
-Several [console commands](../3-console/02-building-console-commands) are provided to work with migrations. These commands apply, roll back, or erase and re-apply migrations.
+Several [console commands](../1-essentials/04-console-commands.md) are provided to work with migrations. These commands apply, roll back, or erase and re-apply migrations.
 
 When deploying the application to production, use `php tempest migrate:up` to apply the latest migrations.
 
@@ -1178,7 +1178,7 @@ final class OnboardTenant
 }
 ```
 
-Dynamic database connections should be registered within the application's entry points. This can be accomplished with [middleware](/main/essentials/routing#route-middleware) or with a [kernel event hook](/main/extra-topics/package-development#provider-classes):
+Dynamic database connections should be registered within the application's entry points. This can be accomplished with [middleware](../1-essentials/01-routing.md#route-middleware) or with a [kernel event hook](../5-extra-topics/01-package-development.md#provider-classes):
 
 ```php
 use Tempest\Container\Container;

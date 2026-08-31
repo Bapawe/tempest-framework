@@ -266,7 +266,7 @@ This will:
 
 After installation, add the following line to your shell configuration file and restart your terminal:
 
-```bash
+```sh
 # Zsh: add to ~/.zshrc
 source ~/.tempest/completion/tempest.zsh
 

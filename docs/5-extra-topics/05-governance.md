@@ -1,5 +1,6 @@
 ---
 title: Governance
+description: "How decisions are made in the Tempest project, who makes them, and how contributors can take part."
 keywords: "governance"
 ---
 
@@ -114,7 +115,7 @@ This document can be changed via pull requests on GitHub, but it must always be 
 
 1. We always act in a manner of respect towards each other
 2. Everyone is welcome to contribute, regardless of their background or experience
-3. Contributors are expected to follow [our contributing guidelines](../extra-topics/contributing)
+3. Contributors are expected to follow [our contributing guidelines](./04-contributing.md)
 4. Tempest originated as a project that wanted to think outside the box, and we continue to encourage this mindset
 
 Furthermore, this document has mentioned **a manner of benevolence** when it comes to the BDFL and council members. With this, we mean that we'll put the welfare of the project and wellbeing of its community first, above our own ambitions, as well as the expectation to follow and enforce previously mentioned core values.

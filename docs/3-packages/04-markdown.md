@@ -110,20 +110,20 @@ When enabled, `tempest/markdown` will generate different versions of the same im
 ```
 
 ```html
-<img 
+<img
     src="/parrot.jpg"
     alt="A parrot"
     srcset="/parrot-1920-1280.jpg 1920w, /parrot-1606-1070.jpg 1606w, /parrot-1214-809.jpg 1214w, /parrot-607-404.jpg 607w"
 >
 ```
 
-Read more about responsive images [here](/docs/packages/responsive-image).
+Read more about [responsive images](/docs/packages/responsive-image).
 
 ### Tables
 
 Add tables like you're used to with other Markdown parsers.
 
-```
+```md
 | Package                | Memory   | Time to parse |
 |------------------------|----------|---------------|
 | tempest/markdown       | 6.664mb  | 10.906ms      |
@@ -159,7 +159,7 @@ Add tables like you're used to with other Markdown parsers.
 
 Use `:::` to create divs with optional classes:
 
-```
+```md
 :::alert
 This is an important message!
 :::
@@ -175,7 +175,7 @@ This is an important message!
 
 Use `~~` to strikethrough text:
 
-```
+```md
 ~~This was wrong~~
 ```
 
@@ -187,7 +187,7 @@ Use `~~` to strikethrough text:
 
 Prepend `*` to a link's URI to open the link in a new tab:
 
-```
+```md
 [Click me](*https://stitcher.io)
 ```
 
@@ -213,9 +213,9 @@ Wrap anything in `@@` to prevent it from being rendered at all:
 
 `tempest/markdown` is meant to be extended. Adding custom parser rules is done in two steps: first you provide a `Rule`, this is a class that determines when your custom parsing logic should be triggered. Next you'll use a `Token` to render your selected Markdown code in any way you'd like.
 
-Let's work with an example. Say you want to add support for including custom HTML snippets. It could look something like this: 
+Let's work with an example. Say you want to add support for including custom HTML snippets. It could look something like this:
 
-```
+```md
 Hello world
 
 {{ snippets/call-to-action.html }}
@@ -233,7 +233,7 @@ final readonly class SnippetRule implements Rule
     public function shouldLex(Parser $parser): bool
     {
         // Our rule takes effect as soon as we run into `{{`
-        
+
         return $parser->comesNext('{{', length: 2);
     }
 
@@ -247,7 +247,7 @@ final readonly class SnippetRule implements Rule
 
         // Then we'll consume the closing } characters
         $parser->consumeWhile('}');
-        
+
         // Finally, we return a token with the snippet
         return new SnippetToken(trim($snippet));
     }
@@ -260,7 +260,7 @@ For performance reasons, it's best to explcitly add the `{:hl-property:length:}`
 
 So that's our rule implementation: we consumed our custom `{{ path }}` syntax, and created a token with that path. Let's take a look at the token implementation next.
 
-The token's responsibility is to parse the content into HTML. 
+The token's responsibility is to parse the content into HTML.
 
 ```php
 use Tempest\Markdown\Parser;
@@ -278,7 +278,7 @@ final readonly class SnippetToken implements Token
     public function parse(Parser $parser): string
     {
         // Of course, you should add validation here depending on your use case
-        
+
         return file_get_contents($this->path);
     }
 }
@@ -330,4 +330,3 @@ Benchmarks are included in this repo and can be run with `composer bench` after 
 | league/commonmark      | 21.114mb | 56.993ms      |
 | michelf/php-markdown   | 7.343mb  | 23.215ms      |
 | erusev/parsedown-extra | 8.485mb  | 15.163ms      |
-

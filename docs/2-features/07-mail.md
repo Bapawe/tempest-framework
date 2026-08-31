@@ -9,7 +9,7 @@ Sending emails starts with picking an email transport. Tempest comes with built-
 
 By default, Tempest is configured to use SMTP mailing. You'll need to add these environment variables and the mailer will be ready for use:
 
-```dotenv
+```env
 MAIL_SMTP_HOST=mail.my_provider.com
 MAIL_SMTP_PORT=587
 MAIL_SMTP_USERNAME=my_username@my_provider.com
@@ -198,7 +198,7 @@ As mentioned, Tempest has built-in support for SMTP, Amazon SES, and Postmark. I
 
 The first step in using any transport is to install the transport-specific driver. You can find a list of all supported transports on [Symfony's documentation](https://symfony.com/doc/current/mailer.html#using-a-3rd-party-transport). If we take Postmark as an example, you should install these two dependencies:
 
-```
+```sh
 composer require symfony/postmark-mailer
 composer require symfony/http-client
 ```
@@ -242,7 +242,7 @@ Finally, make sure that all environment variables are correctly set, and you're 
 
 While SMTP, Amazon SES, and Postmark are built in, there are a lot of [other transports available](https://symfony.com/doc/current/mailer.html#using-a-3rd-party-transport) as well. In order to use one of those, you must create a new config class, specifically for that transport. Here's an example of using Mailgun. First you require the Symfony driver:
 
-```
+```sh
 composer require symfony/mailgun-mailer
 ```
 
@@ -322,7 +322,7 @@ final class MailEventHandlers
 
 ## Testing
 
-Any test class extending from {b`\Tempest\Framework\Testing\IntegrationTest`} will have the {b`\Tempest\Mail\Testing\MailTester`} available:
+Any test class extending from [`IntegrationTest`](https://github.com/tempestphp/tempest-framework/blob/main/src/Tempest/Framework/Testing/IntegrationTest.php) will have the {b`\Tempest\Mail\Testing\MailTester`} available:
 
 ```php
 public function test_welcome_mail()
@@ -358,4 +358,4 @@ By default, `shouldFail()` throws a Symfony `TransportException`. You can pass a
 $this->mailer->shouldFail(exception: new RuntimeException(message: 'Connection refused'));
 ```
 
-Note that mails sent within tests using the {b`\Tempest\Mail\Testing\MailTester`} will never be actually sent. Read more about testing [here](/docs/essentials/testing).
+Note that mails sent within tests using the {b`\Tempest\Mail\Testing\MailTester`} will never be actually sent. Read more in the [testing documentation](/docs/essentials/testing).

@@ -11,7 +11,7 @@ Dealing with repeating, scheduled tasks is as simple as adding the {`#[Tempest\C
 
 To run tasks on your server, a single cron task is required. This task should call the `schedule:run` command, which will evaluate which scheduled task should be run at the current time.
 
-```
+```txt
 0 * * * * user /path/to/{*tempest schedule:run*}
 ```
 

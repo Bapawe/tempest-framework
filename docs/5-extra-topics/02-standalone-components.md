@@ -1,5 +1,6 @@
 ---
 title: Standalone components
+description: "Most of Tempest's components can be installed and used on their own, in any PHP project."
 ---
 
 ## Overview
@@ -10,7 +11,7 @@ Note that Tempest is in its early stages—some components still depend on `temp
 
 ## `tempest/console`
 
-```
+```sh
 composer require tempest/console
 ```
 
@@ -40,7 +41,7 @@ ConsoleApplication::boot()->run();
 
 `tempest/http` contains all code to run a web application: router and view renderer, controllers, HTTP exception handling, view components, etc.
 
-```
+```sh
 composer require tempest/http
 ```
 
@@ -71,7 +72,7 @@ Note that the `root` path passed in `HttpApplication::boot` should point to your
 
 `tempest/container` is Tempest's standalone container implementation. Note that this package doesn't provide discovery, so initializers will need to be added manually.
 
-```
+```sh
 composer require tempest/container
 ```
 
@@ -87,7 +88,7 @@ $foo = $container->get(Foo::class);
 
 `tempest/debug` provides the `lw`, `ld` and `ll` functions. This package is truly standalone, but when installed in a Tempest project, it will also automatically write to configured log files.
 
-```
+```sh
 composer require tempest/debug
 ```
 
@@ -97,13 +98,13 @@ ld($variable);
 
 ## `tempest/view`
 
-Tempest View can be used as a standalone package. You can read about how to use it [here](/2.x/essentials/views#tempest-view-as-a-standalone-engine).
+Tempest View can be used as a standalone package. You can read about [using Tempest View as a standalone engine](../1-essentials/02-views.md#tempest-view-as-a-standalone-engine).
 
 ## `tempest/event-bus`
 
 Tempest's event bus can be used as a standalone package, in order for event handlers to be discovered, you'll have to boot Tempest's kernel and resolve the event bus from the container:
 
-```
+```sh
 composer require tempest/event-bus
 ```
 
@@ -122,7 +123,7 @@ $eventBus->dispatch(new MyEvent());
 
 Tempest's command bus can be used as a standalone package, in order for command handlers to be discovered, you'll have to boot Tempest's kernel and resolve the command bus from the container:
 
-```
+```sh
 composer require tempest/command-bus
 ```
 
@@ -141,7 +142,7 @@ $commandBus->dispatch(new MyCommand());
 
 `tempest/mapper` maps data between many types of sources, from arrays to objects, objects to JSON, …
 
-```
+```sh
 composer require tempest/mapper
 ```
 

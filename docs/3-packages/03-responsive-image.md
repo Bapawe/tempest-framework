@@ -51,6 +51,7 @@ $config = new ResponsiveImageConfig(
     imageManager: new ImageManager(new Driver()),
 );
 ```
+
 | Parameter                      | Description                                                                                                                                                                                                                |
 |--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `{:hl-property:srcPath:}`      | The path to the directory where all source images are stored.                                                                                                                                                              |
@@ -66,9 +67,9 @@ With a `ResponsiveImageFactory` in place, you can now render images. The only th
 ```php
 $imageFactory = new ResponsiveImageFactory($config);
 
-$image = $imageFactory->create('/parrot.jpg'); 
+$image = $imageFactory->create('/parrot.jpg');
 // This image `/parrot.jpg` is assumed to be present in the defined `srcPath`.
-// It will be copied, together with its responsive variants to `publicPath` 
+// It will be copied, together with its responsive variants to `publicPath`
 
 echo $image->html;
 
@@ -104,7 +105,7 @@ $image = $factory->create(
 
 You can combine this package with [tempest/command-bus](/docs/features/command-bus) to enable async image processing. This will make it so that the responsive variations of an image are rendered in the background. The main image will still be copied immediately, so you won't have to wait until processing is done.
 
-Read about how to install Tempest's command bus as a standalone component [here](/docs/extra-topics/standalone-components#tempest-command-bus). 
+Read about how to install [Tempest's command bus as a standalone component](/docs/extra-topics/standalone-components#%60tempest/command-bus%60).
 
 ### Markdown parsing
 

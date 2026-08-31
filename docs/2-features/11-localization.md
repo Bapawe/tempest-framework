@@ -69,7 +69,7 @@ Translation messages are usually stored in translation files. Tempest automatica
 
 For instance, you may store translation files in a `lang` directory:
 
-```
+```txt
 src/
 └── lang/
     ├── messages.fr.yaml

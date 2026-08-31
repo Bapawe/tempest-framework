@@ -1,5 +1,6 @@
 ---
 title: Command bus
+description: "Tempest ships with a command bus that dispatches commands to their handlers, synchronously or asynchronously, with support for middleware."
 keywords: "Experimental"
 ---
 

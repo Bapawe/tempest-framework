@@ -7,7 +7,7 @@ description: "Tempest comes with a handful of tools to help third-party package 
 
 Creating a package for Tempest consists of creating a typical PHP package, except it should depend on the relevant Tempest dependency. When you install a dependency that depends on any `tempest/*` package, [discovery](../1-essentials/05-discovery.md) will find it through Composer metadata and register discoverable classes.
 
-Unlike Symfony or Laravel, Tempest doesn't have a dedicated "service provider" concept. Instead, you're encouraged to rely on [discovery](../1-essentials/05-discovery.md) and [initializers](../1-essentials/05-container#dependency-initializers).
+Unlike Symfony or Laravel, Tempest doesn't have a dedicated "service provider" concept. Instead, you're encouraged to rely on [discovery](../1-essentials/05-discovery.md) and [initializers](../1-essentials/05-container.md#dependency-initializers).
 
 ## Optional Tempest support
 
@@ -159,6 +159,6 @@ final readonly class MyPackageProvider
 
 ## Testing helpers
 
-Tempest provides a {`\Tempest\Framework\Testing\IntegrationTest`} class, which your PHPUnit tests may extend from. By doing so, your tests will automatically boot the framework, and have a range of helper methods available.
+Tempest provides an [`IntegrationTest`](https://github.com/tempestphp/tempest-framework/blob/main/src/Tempest/Framework/Testing/IntegrationTest.php) class, which your PHPUnit tests may extend from. By doing so, your tests will automatically boot the framework, and have a range of helper methods available.
 
 For more information regarding testing, you may read the [dedicated documentation](../1-essentials/07-testing.md).

@@ -13,7 +13,7 @@ Once the prerequisites are installed, you can chose your installation method. Te
 
 ## Creating a Tempest application
 
-To get started with a new Tempest project, you may use {`tempest/app`} as the starting point. The `composer create-project` command will scaffold it for you:
+To get started with a new Tempest project, you may use `tempest/app` as the starting point. The `composer create-project` command will scaffold it for you:
 
 ```sh
 {:hl-keyword:composer:} create-project tempest/app {:hl-type:my-app:}
@@ -35,17 +35,17 @@ Optionally, you may install a basic front-end scaffolding that includes [Vite](h
 {:hl-keyword:php:} tempest install vite --tailwind
 ```
 
-The assets created by this wizard, `main.entrypoint.ts` and `main.entrypoint.css`, are automatically discovered by Tempest. You can serve them using the [`<x-vite-tags />`](../1-essentials/03-views#x-vite-tags) component in your templates.
+The assets created by this wizard, `main.entrypoint.ts` and `main.entrypoint.css`, are automatically discovered by Tempest. You can serve them using the [`<x-vite-tags />`](../1-essentials/02-views.md#%60x-vite-tags%60) component in your templates.
 
 You may then [run the front-end development server](../2-features/02-asset-bundling.md#running-the-development-server), which will serve your assets on-the-fly:
 
-```bash
+```sh
 {:hl-keyword:npm:} run dev
 ```
 
 ## Tempest as a package
 
-If you already have a project, you can opt to install {`tempest/framework`} as a standalone package. You could do this in any project; it could already contain code, or it could be an empty project.
+If you already have a project, you can opt to install `tempest/framework` as a standalone package. You could do this in any project; it could already contain code, or it could be an empty project.
 
 ```sh
 {:hl-keyword:composer:} require tempest/framework
@@ -73,7 +73,7 @@ Tempest won't impose any file structure on you: one of its core features is that
 For instance, Tempest is able to differentiate between a controller method and a console command by looking at the code, instead of relying on naming conventions or configuration files.
 
 :::info
-This concept is called [discovery](../1-essentials/05-discovery), and is one of Tempest's most powerful features.
+This concept is called [discovery](../1-essentials/05-discovery.md), and is one of Tempest's most powerful features.
 :::
 
 The following project structures work the same way in Tempest, without requiring any specific configuration:
@@ -98,7 +98,7 @@ The following project structures work the same way in Tempest, without requiring
 
 ## About discovery
 
-Discovery works by scanning your project code and looking at each file and method individually to determine what that code does. In production environments, [Tempest caches the discovery process](../1-essentials/05-discovery#discovery-in-production), avoiding any performance overhead.
+Discovery works by scanning your project code and looking at each file and method individually to determine what that code does. In production environments, [Tempest caches the discovery process](../1-essentials/05-discovery.md#discovery-in-production), avoiding any performance overhead.
 
 As an example, Tempest is able to determine which methods are controller methods based on their [route attributes](../1-essentials/01-routing.md), or to detect console commands based on methods annotated with {b`#[Tempest\Console\ConsoleCommand]`}:
 

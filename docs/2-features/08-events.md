@@ -34,7 +34,7 @@ enum AircraftLifecycle
 
 ## Dispatching events
 
-The {`Tempest\EventBus\EventBus`} interface implements a `dispatch()` method, which you may use to dispatch any event. The event bus may be [injected as a dependency](../1-essentials/01-container) like any other service:
+The {`Tempest\EventBus\EventBus`} interface implements a `dispatch()` method, which you may use to dispatch any event. The event bus may be [injected as a dependency](../1-essentials/05-container.md) like any other service:
 
 ```php app/AircraftService.php
 use Tempest\EventBus\EventBus;
@@ -56,7 +56,7 @@ final readonly class AircraftService
 }
 ```
 
-Alternatively, Tempest also provides the `\Tempest\event()` function. It accepts the same arguments as the {`Tempest\EventBus\EventBus`}'s `dispatch()` method, but uses [service location](../1-essentials/01-container#injected-properties) under the hood to access the event bus.
+Alternatively, Tempest also provides the `\Tempest\event()` function. It accepts the same arguments as the {`Tempest\EventBus\EventBus`}'s `dispatch()` method, but uses [service location](../1-essentials/05-container.md#injected-properties) under the hood to access the event bus.
 
 ## Handling events
 
@@ -79,7 +79,7 @@ final readonly class AircraftObserver
 
 ### Local handlers
 
-When an event is only meant to be listened for in a specific situation, it is better to register it only when relevant. Such a situation could be, for instance, a [console command](../3-console/01-introduction) that needs logging when an event is dispatched.
+When an event is only meant to be listened for in a specific situation, it is better to register it only when relevant. Such a situation could be, for instance, a [console command](../1-essentials/04-console-commands.md) that needs logging when an event is dispatched.
 
 ```php app/SyncUsersCommand.php
 final readonly class SyncUsersCommand
@@ -189,13 +189,13 @@ final class MyHandler
 
 Tempest includes a few built-in events that are primarily used internally. While most applications won’t need them, you are free to listen to them if desired.
 
-Most notably, the {`\Tempest\Core\KernelEvent`} enumeration defines the `BOOTED` and `SHUTDOWN` events, which are dispatched when the framework has [finished bootstrapping](../4-internals/01-bootstrap) and right before the process is exited, respectively.
+Most notably, the {`\Tempest\Core\KernelEvent`} enumeration defines the `BOOTED` and `SHUTDOWN` events, which are dispatched when the framework has [finished bootstrapping](../4-internals/01-lifecycle.md#booting) and right before the process is exited, respectively.
 
 Other events include migration-related ones, such as {b`Tempest\Database\Migrations\MigrationMigrated`}, {b`Tempest\Database\Migrations\MigrationRolledBack`}, {b`Tempest\Database\Migrations\MigrationFailed`} and {b`Tempest\Database\Migrations\MigrationValidationFailed`}.
 
 ## Testing
 
-By extending {b`Tempest\Framework\Testing\IntegrationTest`} from your test case, you gain access to the event bus testing utilities through the `eventBus` property.
+By extending [`IntegrationTest`](https://github.com/tempestphp/tempest-framework/blob/main/src/Tempest/Framework/Testing/IntegrationTest.php) from your test case, you gain access to the event bus testing utilities through the `eventBus` property.
 
 These utilities include a way to replace the event bus with a testing implementation, as well as a few assertion methods to ensure that events have been dispatched or are being listened to.
 

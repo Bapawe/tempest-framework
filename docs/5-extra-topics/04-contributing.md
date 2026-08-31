@@ -1,5 +1,6 @@
 ---
 title: Contributing
+description: "How to report bugs, propose features, and submit pull requests to the Tempest framework."
 keywords: "How do I"
 ---
 
@@ -273,7 +274,7 @@ Scopes are not mandatory, but are highly recommended for consistency and ease of
 
 Here are some commit examples:
 
-```
+```txt
 {:hl-property:feat:}({:hl-keyword:support:}): add `StringHelper` class
 {:hl-property:feat:}({:hl-keyword:support/string:}): add `uuid` method
 {:hl-property:perf:}({:hl-keyword:discovery:}): improve cache efficiency
@@ -300,7 +301,7 @@ Tempest currently does not follow a fixed release cycle. In general, bug fixes a
 Even though bug fixes and minor features can be released whenever available, we do some level of long-term planning to ensure Tempest stays on track. There should always be two active milestones, and one for future versions.
 
 - The **current minor milestone** includes all issues that should be addressed as patch or minor versions within the current major version. Anything in this milestone should be considered "ready to work on" and can be done at any point in time before the next major release.
-- The **next major milestone** includes all issues that are planned for the next major release, many will be breaking changes. Oftentimes, we'll work on both current minor and next major milestones at the same time. 
+- The **next major milestone** includes all issues that are planned for the next major release, many will be breaking changes. Oftentimes, we'll work on both current minor and next major milestones at the same time.
 - The **next minor milestone** includes all issues that should be addressed as patch or minor versions after the next major release has been tagged.
 - All other issues that don't get assigned a milestone are considered to be "unplanned". They might at one point be added to a milestone, but there's no guarantee on timing.
 

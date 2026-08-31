@@ -7,7 +7,7 @@ description: "Tempest's validation is based on built-in PHP types, but provides 
 
 Tempest provides a {`\Tempest\Validation\Validator`} object capable of validating an array of values against the public properties of a class or an array of validation rules.
 
-While validation and [data mapping](./01-mapper) often work together, the two are separate components and can also be used separately.
+While validation and [data mapping](./01-mapper.md) often work together, the two are separate components and can also be used separately.
 
 ## Validating against objects
 

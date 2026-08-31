@@ -38,7 +38,7 @@ final readonly class OrderController
 
 The client must include the idempotency key as a header:
 
-```
+```txt
 POST /orders HTTP/1.1
 Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
 Content-Type: application/json
@@ -282,6 +282,7 @@ return new IdempotencyConfig(
 ```
 
 ## Limitations
+
 - **Windows is not supported.** The heartbeat mechanism relies on `pcntl_alarm()` and
   `pcntl_signal()`, which are not available on Windows. Attempting to use idempotency on Windows will throw an {b`Tempest\Idempotency\Exceptions\IdempotencyPlatformWasNotSupported`} exception.
 - **Stored responses must be serializable.** Response bodies are stored using PHP serialization or JSON encoding. Non-serializable bodies (such as generators or views) are stored as type name strings and will not reproduce the original output on replay.

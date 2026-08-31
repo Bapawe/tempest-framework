@@ -11,7 +11,7 @@ This component is used internally for persistence between models and the databas
 
 ## Mapping data
 
-To map data from a source to a target, use the {b`\Tempest\Mapper\map()`} function. This function accepts the source data as its sole parameter and returns a mapper instance.
+To map data from a source to a target, use the `\Tempest\Mapper\map()` function. This function accepts the source data as its sole parameter and returns a mapper instance.
 
 Calling the `to()` method on this instance returns a new instance of the target class, populated with the mapped data:
 

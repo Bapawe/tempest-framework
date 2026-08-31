@@ -19,6 +19,7 @@ Tempest provides an installer to quickly set up OAuth in your project. You can r
 ```
 
 The installer will:
+
 - Prompt you to select one or more OAuth providers from the available options
 - Publish the necessary configuration files and controller stubs
 - Optionally add the OAuth credentials to your `.env` and `.env.example` files
@@ -122,7 +123,7 @@ $token->getRefreshToken();  // A new refresh token, if the provider rotates them
 $token->getExpires();       // The new expiration timestamp
 ```
 
-Note that Tempest does not store access or refresh tokens, so persisting them is your application's responsibility. To do so, you may use the second parameter of the `map` callback, which receives the {b`League\OAuth2\Client\Token\AccessToken`} obtained during authentication:
+Note that Tempest does not store access or refresh tokens, so persisting them is your application's responsibility. To do so, you may use the second parameter of the `map` callback, which receives the `League\OAuth2\Client\Token\AccessToken` obtained during authentication:
 
 ```php
 $user = $this->oauth->authenticate(
@@ -255,7 +256,7 @@ Tempest provides a different configuration object for each OAuth provider. Below
 
 ## Testing
 
-By extending {`Tempest\Framework\Testing\IntegrationTest`} from your test case, you gain access to the OAuth testing utilities through the `oauth` property.
+By extending [`IntegrationTest`](https://github.com/tempestphp/tempest-framework/blob/main/src/Tempest/Framework/Testing/IntegrationTest.php) from your test case, you gain access to the OAuth testing utilities through the `oauth` property.
 
 These utilities include a way to replace the OAuth client with a testing implementation, as well as a few assertion methods related to OAuth flows.
 

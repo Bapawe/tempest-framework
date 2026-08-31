@@ -27,7 +27,7 @@ Some frontend frameworks also provide a `{html}:{:hl-property:attribute:}` synta
 
 ### Control structures
 
-Control structures like conditionals and loops are modelled with expression attributes. These control structure attributes are available: `{html}:{:hl-property:if:}`, `{html}:{:hl-property:elseif:}`, `{html}:{:hl-property:else:}`, {:hl-property:isset:}`, `{html}:{:hl-property:foreach:}`, `{html}:{:hl-property:forelse:}`. Code within these control structures is compiled to valid PHP expressions.
+Control structures like conditionals and loops are modelled with expression attributes. These control structure attributes are available: `{html}:{:hl-property:if:}`, `{html}:{:hl-property:elseif:}`, `{html}:{:hl-property:else:}`, `{html}:{:hl-property:isset:}`, `{html}:{:hl-property:foreach:}`, `{html}:{:hl-property:forelse:}`. Code within these control structures is compiled to valid PHP expressions.
 
 The following conditional:
 
@@ -516,7 +516,7 @@ Iconify has a large collection of icon sets, which you may browse using the [Ic√
 
 ### `x-vite-tags`
 
-Tempest has built-in support for [Vite](https://vite.dev/), the most popular front-end development server and build tool. You may read more about [asset bundling](../2-features/05-asset-bundling.md) in the dedicated documentation.
+Tempest has built-in support for [Vite](https://vite.dev/), the most popular front-end development server and build tool. You may read more about [asset bundling](../2-features/02-asset-bundling.md) in the dedicated documentation.
 
 This component simply inject registered entrypoints where it is called.
 
@@ -577,7 +577,7 @@ return view(__DIR__ . '/views/home.view.php');
 return view('views/home.view.php');
 ```
 
-### View data autocompletion:
+### View data autocompletion
 
 ```php
 return view(__DIR__ . '/views/home.view.php', foo: 'Foo', bar: 'Bar');

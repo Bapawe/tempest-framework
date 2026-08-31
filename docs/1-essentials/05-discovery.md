@@ -191,10 +191,10 @@ final class ViteDiscovery implements Discovery, DiscoversPath
 
 ## Excluding files and classes from discovery
 
-Files and classes may be excluded from discovery by providing a {b`Tempest\Core\DiscoveryConfig`} [configuration](./06-configuration.md) file.
+Files and classes may be excluded from discovery by providing a {b`Tempest\Discovery\DiscoveryConfig`} [configuration](./06-configuration.md) file.
 
 ```php src/discovery.config.php
-use Tempest\Core\DiscoveryConfig;
+use Tempest\Discovery\DiscoveryConfig;
 
 return new DiscoveryConfig()
     ->skipClasses(GlobalHiddenDiscovery::class)
@@ -205,7 +205,7 @@ return new DiscoveryConfig()
 
 Most of Tempest's features are built on top of discovery. The following is a non-exhaustive list that describes which discovery class is associated to which feature.
 
-- {b`Tempest\Core\DiscoveryDiscovery`} discovers other discovery classes. This class is run manually by the framework when booted.
+- {b`Tempest\Discovery\DiscoveryDiscovery`} discovers other discovery classes. This class is run manually by the framework when booted.
 - {b`Tempest\CommandBus\CommandBusDiscovery`} discovers methods with the {b`#[Tempest\CommandBus\CommandHandler]`} attribute and registers them into the [command bus](../2-features/10-command-bus.md).
 - {b`Tempest\Console\Discovery\ConsoleCommandDiscovery`} discovers methods with the {b`#[Tempest\Console\ConsoleCommand]`} attribute and registers them as [console commands](../1-essentials/04-console-commands.md).
 - {b`Tempest\Console\Discovery\ScheduleDiscovery`} discovers methods with the {b`#[Tempest\Console\Schedule]`} attribute and registers them as [scheduled tasks](../2-features/11-scheduling.md).

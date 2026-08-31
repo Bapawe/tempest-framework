@@ -11,7 +11,7 @@ Even though the framework is designed to use as little configuration as possible
 
 ## Configuration files
 
-Files ending with `*.config.php` are recognized by Tempest's [discovery](../1-essentials/05-discovery) as configuration objects, and will be registered as [singletons](./01-container#singletons) in the container.
+Files ending with `*.config.php` are recognized by Tempest's [discovery](../1-essentials/05-discovery.md) as configuration objects, and will be registered as [singletons](./05-container.md#singletons) in the container.
 
 ```php app/postgres.config.php
 use Tempest\Database\Config\PostgresConfig;
@@ -86,7 +86,7 @@ final class SlackConfig
 }
 ```
 
-The next step is to register this configuration object in the container. This can be done by creating a `slack.config.php` file, which will be discovered by Tempest and registered as a [singleton](./01-container#singletons).
+The next step is to register this configuration object in the container. This can be done by creating a `slack.config.php` file, which will be discovered by Tempest and registered as a [singleton](./05-container.md#singletons).
 
 ```php app/Slack/slack.config.php
 use function Tempest\env;
@@ -120,7 +120,7 @@ final class SlackConnector extends HttpConnector
 
 ## Per-environment configuration
 
-Whenever possible, you should have a single configuration file per feature. You may use the {b`Tempest\env()`} function inside that file to reference credentials and environment-specific values.
+Whenever possible, you should have a single configuration file per feature. You may use the `Tempest\env()` function inside that file to reference credentials and environment-specific values.
 
 However, it's sometimes needed to have completely different configurations in development and in production. For instance, you may use S3 for your [storage](../2-features/05-file-storage.md) in production, but use the local filesystem during development.
 

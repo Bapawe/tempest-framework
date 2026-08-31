@@ -54,7 +54,7 @@ $highlighter = new Highlighter(new LightTerminalTheme());
 echo $highlighter->parse($code, 'php');
 ```
 
-![](/img/terminal.png)
+![Code highlighted with the light terminal theme](/img/terminal.png)
 
 ## Gutter
 
@@ -83,7 +83,7 @@ The gutter will show additions and deletions, and can start at any given line nu
   }
 ```
 
-Finally, you can enable gutter rendering on the fly if you're using [commonmark code blocks](#common-mark-integration) by appending <code>{startAt}</code> to the language definition:
+Finally, you can enable gutter rendering on the fly if you're using [commonmark code blocks](#commonmark-integration) by appending <code>{startAt}</code> to the language definition:
 
 <pre>
 &#96;&#96;&#96;php{10}
@@ -105,9 +105,9 @@ Note that highlight tags are not supported in terminal themes.
 
 You can add these tags within your code to emphasize or blur parts:
 
-- <code>{_ content _}</code> adds the <code>.hl-em</code> class
-- <code>{* content *}</code> adds the <code>.hl-strong</code> class
-- <code>{~ content ~}</code> adds the <code>.hl-blur</code> class
+- `{_ content _}` adds the `.hl-em` class
+- `{* content *}` adds the `.hl-strong` class
+- `{~ content ~}` adds the `.hl-blur` class
 
 <pre>
 {_Emphasized text_}
@@ -193,7 +193,7 @@ Within inline Markdown code tags, you can specify the language by prepending it 
 &#96;{php}public function before(TokenType $tokenType): string&#96;
 </pre>
 
-You'll need to set up [commonmark](#common-mark-integration) properly to get this to work.
+You'll need to set up [commonmark](#commonmark-integration) properly to get this to work.
 
 ## CommonMark integration
 
@@ -216,7 +216,7 @@ $markdown = new MarkdownConverter($environment);
 
 Keep in mind that you need to manually install `league/commonmark`:
 
-```
+```sh
 composer require league/commonmark;
 ```
 
@@ -675,7 +675,7 @@ enum ExtendedTokenType: string implements TokenType
 
 ### Markdown support
 
-```
+```sh
 composer require league/commonmark;
 ```
 
@@ -710,7 +710,7 @@ Phrases in green have been marked to show passive voice.
 
 You can enable Ellison support by installing [`assertchris/ellison`](https://github.com/assertchris/ellison-php):
 
-```
+```sh
 composer require assertchris/ellison
 ```
 
@@ -754,4 +754,4 @@ Hello world!
 ```
 </pre>
 
-You can play around with it [here](/ellison).
+You can play around with it [in the Ellison playground](/ellison).

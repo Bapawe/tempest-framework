@@ -91,7 +91,7 @@ final class SentryExceptionReporter implements ExceptionReporter
 }
 ```
 
-Exception reporters are automatically [discovered](../4-internals/02-discovery.md) and registered. All registered reporters are invoked whenever an exception is processed, allowing multiple reporters to handle the same exception.
+Exception reporters are automatically [discovered](../1-essentials/05-discovery.md) and registered. All registered reporters are invoked whenever an exception is processed, allowing multiple reporters to handle the same exception.
 
 For example, the default logging reporter logs to a file, while the reporter above sends the error to Sentry.
 
@@ -196,12 +196,12 @@ final class NotFoundExceptionRenderer implements ExceptionRenderer
 ```
 
 :::info
-Exception renderers are automatically [discovered](../4-internals/02-discovery.md) and checked in {b`#[Tempest\Support\Priority]`} order.
+Exception renderers are automatically [discovered](../1-essentials/05-discovery.md) and checked in {b`#[Tempest\Support\Priority]`} order.
 :::
 
 ## Testing
 
-By extending {`Tempest\Framework\Testing\IntegrationTest`} from a test case, exception testing utilities may be accessed for making assertions about processed exceptions.
+By extending [`IntegrationTest`](https://github.com/tempestphp/tempest-framework/blob/main/src/Tempest/Framework/Testing/IntegrationTest.php) from a test case, exception testing utilities may be accessed for making assertions about processed exceptions.
 
 ```php
 // Allows exceptions to be processed during tests

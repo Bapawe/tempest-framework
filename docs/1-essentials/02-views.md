@@ -8,13 +8,13 @@ keywords: "Experimental"
 
 Views in Tempest are parsed by Tempest View, our own templating engine. Tempest View uses a syntax that can be thought of as a superset of HTML. If you prefer using a templating engine with more widespread support, [you may also use Blade, Twig, or any other](#using-other-engines) ‚Äî as long as you provide a way to initialize it.
 
-If you'd like to Tempest View as a standalone component in your project, you can read the documentation on how to do so [here](../5-extra-topics/02-standalone-components.md#tempest-view).
+If you'd like to Tempest View as a standalone component in your project, you can read [the standalone components documentation](../5-extra-topics/02-standalone-components.md#%60tempest/view%60).
 
 ### Syntax overview
 
 The following is an example of a view that inherits the `x-base` component, passing a `title` property.
 
-Inside, a `x-post` [component](#view-components) is rendered multiple times thanks to a [foreach loop](#foreach-and-forelse) on `$this->posts`. That component has a default [slot](#using-slots), in which the post details are rendered. The [control flow](#control-flow-directives) is implemented using HTML attributes that start with colons `:`.
+Inside, a `x-post` [component](#view-components) is rendered multiple times thanks to a [foreach loop](#%60:foreach%60-and-%60:forelse%60) on `$this->posts`. That component has a default [slot](#using-slots), in which the post details are rendered. The [control flow](#control-flow-directives) is implemented using HTML attributes that start with colons `:`.
 
 ```html
 <x-base title="Home">
@@ -215,7 +215,7 @@ Since `:isset` is a shorthand for `:if="isset()"`, it can be combined with `:els
 <h1 :else>Title</h1>
 ```
 
-#### `{:hl-property::foreach:}` and `:{:hl-property:forelse:}`
+#### `:foreach` and `:forelse`
 
 The `{:hl-property::foreach:}` directive may be used to render the associated element multiple times based on the result of its expression. Combined with `:{:hl-property:forelse:}`, an empty state can be displayed when the data is empty.
 
@@ -630,6 +630,7 @@ Let us assume you have an `x-container` view component, which is a `<div>` with 
 ```html x-container.view.php
 <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><x-slot/></div>
 ```
+
 Now, assume we have an `x-header` in which we wish to use the `x-container`. Our `x-header` wishes to place slots `left` and `right` inside it; `x-header` owns these slots and wishes to expose these slots at the callsite in case they need custom content. Using the `define` keyword tells Tempest to treat these slots as *defined* by `x-header` instead of as a *slot to fill* inside `x-container`. Using `name` here instead of `define` would mean that Tempest falls back to the AST, and treats them as if they are slots of `<x-container>`.
 
 ```html x-header.view.php
@@ -883,7 +884,7 @@ Iconify has a large collection of icon sets, which you may browse using the [Ic√
 
 ### `x-vite-tags`
 
-Tempest has built-in support for [Vite](https://vite.dev/), the most popular front-end development server and build tool. You may read more about [asset bundling](../2-features/05-asset-bundling.md) in the dedicated documentation.
+Tempest has built-in support for [Vite](https://vite.dev/), the most popular front-end development server and build tool. You may read more about [asset bundling](../2-features/02-asset-bundling.md) in the dedicated documentation.
 
 This component simply injects registered entrypoints where it is called.
 
@@ -1041,7 +1042,7 @@ View files can live in any directory that is discoverable by Tempest. That means
 
 Don't forget to run `composer up` after making changes to your composer.json file.
 
-Note that view files themselves don't need a namespace; this namespace is only here to tell Tempest that `views/` is a directory it should scan. If you want to add a class in the `Views` namespace (like, for example, a [custom view object](/2.x/essentials/views#using-dedicated-view-objects)), then that is possible as well.
+Note that view files themselves don't need a namespace; this namespace is only here to tell Tempest that `views/` is a directory it should scan. If you want to add a class in the `Views` namespace (like, for example, a [custom view object](#using-dedicated-view-objects)), then that is possible as well.
 
 ## Using other engines
 
@@ -1079,7 +1080,7 @@ return new ViewConfig(
 
 You will first need to install the Blade engine. Tempest provides a bridge distributed as `tempest/blade`:
 
-```
+```sh
 composer require tempest/blade
 ```
 
