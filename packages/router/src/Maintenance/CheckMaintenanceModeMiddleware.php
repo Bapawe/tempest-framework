@@ -11,7 +11,7 @@ use Tempest\Router\HttpMiddlewareCallable;
 use Tempest\Support\Priority;
 
 /**
- * Answers every request with a `503 Service Unavailable` while the application is down.
+ * Answers every request with a `503 Service Unavailable` while maintenance mode is enabled.
  *
  * It runs after `HandleRouteExceptionMiddleware`, so its exception is rendered, and before `MatchRouteMiddleware`,
  * so unknown URLs get a 503 instead of a 404. The state is read on every request, so that running workers

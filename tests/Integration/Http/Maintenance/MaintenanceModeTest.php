@@ -16,6 +16,7 @@ use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
 use Tests\Tempest\Integration\Http\Maintenance\Fixtures\MaintenanceModeController;
 use Tests\Tempest\Integration\Http\Maintenance\Fixtures\MaintenancePageRenderer;
 
+use function Tempest\Support\Filesystem\read_json;
 use function Tempest\Support\Filesystem\write_file;
 
 /**
@@ -33,7 +34,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function html_requests_get_a_503_error_page_while_down(): void
+    public function html_requests_get_a_503_error_page_while_enabled(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
 
@@ -47,7 +48,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function json_requests_get_a_503_json_error_while_down(): void
+    public function json_requests_get_a_503_json_error_while_enabled(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
 
@@ -116,7 +117,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function unknown_urls_get_a_503_instead_of_a_404_while_down(): void
+    public function unknown_urls_get_a_503_instead_of_a_404_while_enabled(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
 
@@ -143,7 +144,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:disable')
             ->assertSuccess()
-            ->assertContains('The application is now up');
+            ->assertContains('Maintenance mode is now disabled.');
 
         $this->http
             ->get('/maintenance-mode/page')
@@ -152,17 +153,17 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function enabling_twice_succeeds_and_says_it_was_already_down(): void
+    public function enabling_twice_succeeds_and_says_it_was_already_enabled(): void
     {
         $this->console
             ->call('maintenance:enable')
             ->assertSuccess()
-            ->assertContains('The application is now down');
+            ->assertContains('Maintenance mode is now enabled.');
 
         $this->console
             ->call('maintenance:enable')
             ->assertSuccess()
-            ->assertContains('The application was already down');
+            ->assertContains('Maintenance mode was already enabled, its settings are updated.');
 
         $this->http
             ->get('/maintenance-mode/page')
@@ -170,12 +171,12 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function disabling_while_already_up_succeeds_with_a_note(): void
+    public function disabling_while_already_disabled_succeeds_with_a_note(): void
     {
         $this->console
             ->call('maintenance:disable')
             ->assertSuccess()
-            ->assertContains('The application is already up');
+            ->assertContains('Maintenance mode was not enabled.');
 
         $this->http
             ->get('/maintenance-mode/page')
@@ -183,10 +184,20 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['{"down_since":'])]
+    public function enabling_saves_when_maintenance_mode_was_enabled_as_enabled_since(): void
+    {
+        $this->clock('2025-03-14 09:26:53');
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->assertSame(1_741_944_413, read_json($this->kernel->internalStorage . '/maintenance.json')['enabled_since'] ?? null);
+    }
+
+    #[Test]
+    #[TestWith(['{"enabled_since":'])]
     #[TestWith(['{"retry":600}'])]
-    #[TestWith(['{"down_since":"yesterday"}'])]
-    #[TestWith(['{"down_since":"1741944413"}'])]
+    #[TestWith(['{"enabled_since":"yesterday"}'])]
+    #[TestWith(['{"enabled_since":"1741944413"}'])]
     public function a_broken_maintenance_state_lets_requests_through(string $json): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
@@ -199,27 +210,27 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function status_reports_up_when_the_maintenance_state_is_broken(): void
+    public function status_reports_disabled_when_the_maintenance_state_is_broken(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', '{"down_since":');
+        write_file($this->kernel->internalStorage . '/maintenance.json', '{"enabled_since":');
 
         $this->console
             ->call('maintenance:status')
             ->assertSuccess()
-            ->assertContains('The application is up');
+            ->assertContains('Maintenance mode is disabled.');
     }
 
     #[Test]
     public function disabling_with_a_broken_maintenance_state_cleans_up_the_leftover_files(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', '{"down_since":');
+        write_file($this->kernel->internalStorage . '/maintenance.json', '{"enabled_since":');
 
         $this->console
             ->call('maintenance:disable')
             ->assertSuccess()
-            ->assertContains('The application is already up');
+            ->assertContains('Maintenance mode was not enabled.');
 
         $this->assertSame([], glob($this->kernel->internalStorage . '/maintenance*'));
     }
@@ -230,7 +241,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     public function excluded_paths_that_are_not_strings_are_skipped(string $excludedPaths, Status $status): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', "{\"down_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
+        write_file($this->kernel->internalStorage . '/maintenance.json', "{\"enabled_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
 
         $this->http
             ->get('/maintenance-mode/page')
@@ -241,7 +252,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     public function a_malformed_retry_value_is_ignored(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', '{"down_since":1741944413,"retry":"soon"}');
+        write_file($this->kernel->internalStorage . '/maintenance.json', '{"enabled_since":1741944413,"retry":"soon"}');
 
         $this->console
             ->call('maintenance:status')
@@ -279,16 +290,16 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function status_reports_up_and_succeeds_while_up(): void
+    public function status_reports_disabled_and_succeeds_while_disabled(): void
     {
         $this->console
             ->call('maintenance:status')
             ->assertSuccess()
-            ->assertContains('The application is up');
+            ->assertContains('Maintenance mode is disabled.');
     }
 
     #[Test]
-    public function status_reports_down_since_when_and_errors_while_down(): void
+    public function status_reports_enabled_since_when_as_info_and_errors_while_enabled(): void
     {
         $this->clock('2025-03-14 09:26:53');
 
@@ -297,7 +308,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('The application has been down since 2025-03-14 09:26:53 (UTC)');
+            ->assertContains('𝓲 // Maintenance mode has been enabled since 2025-03-14 09:26:53 (UTC).');
     }
 
     #[Test]
@@ -326,7 +337,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     #[Test]
     #[TestWith([0])]
     #[TestWith([-5])]
-    public function enabling_with_a_retry_below_one_is_rejected_and_leaves_the_application_up(int $retry): void
+    public function enabling_with_a_retry_below_one_is_rejected_and_leaves_maintenance_mode_disabled(int $retry): void
     {
         $this->console
             ->call("maintenance:enable --retry={$retry}")
@@ -388,7 +399,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function enabling_again_with_a_retry_keeps_the_original_down_since_time(): void
+    public function enabling_again_with_a_retry_keeps_the_original_enabled_since_time(): void
     {
         $clock = $this->clock('2025-03-14 09:26:53');
 
@@ -401,12 +412,12 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('The application has been down since 2025-03-14 09:26:53 (UTC)')
+            ->assertContains('𝓲 // Maintenance mode has been enabled since 2025-03-14 09:26:53 (UTC).')
             ->assertContains('Clients are told to retry after 600 seconds');
     }
 
     #[Test]
-    public function enabling_again_keeps_the_original_down_since_time(): void
+    public function enabling_again_keeps_the_original_enabled_since_time(): void
     {
         $clock = $this->clock('2025-03-14 09:26:53');
 
@@ -419,11 +430,11 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('The application has been down since 2025-03-14 09:26:53 (UTC)');
+            ->assertContains('𝓲 // Maintenance mode has been enabled since 2025-03-14 09:26:53 (UTC).');
     }
 
     #[Test]
-    public function status_reports_up_again_after_disabling(): void
+    public function status_reports_disabled_again_after_disabling(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
         $this->console->call('maintenance:disable')->assertSuccess();
@@ -431,7 +442,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertSuccess()
-            ->assertContains('The application is up');
+            ->assertContains('Maintenance mode is disabled.');
     }
 
     #[Test]
@@ -442,7 +453,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertSuccess()
-            ->assertContains('The application is up');
+            ->assertContains('Maintenance mode is disabled.');
 
         $this->container->singleton(Environment::class, Environment::LOCAL);
         $this->console->call('maintenance:enable')->assertSuccess();
@@ -451,11 +462,11 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('The application has been down since');
+            ->assertContains('Maintenance mode has been enabled since');
     }
 
     #[Test]
-    public function console_commands_keep_working_while_down(): void
+    public function console_commands_keep_working_while_enabled(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
 

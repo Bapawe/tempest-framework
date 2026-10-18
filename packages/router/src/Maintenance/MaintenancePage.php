@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tempest\Router\Maintenance;
 
 /**
- * The 503 bodies rendered when the application went down, so they can be served without booting it.
+ * The 503 bodies rendered when maintenance mode was enabled, so they can be served without booting it.
  */
 final readonly class MaintenancePage
 {

@@ -29,9 +29,9 @@ final readonly class MaintenanceMode
     ) {}
 
     /**
-     * Returns the current state, or `null` when the application is up. A state that can't be read or parsed counts as
-     * up, so a broken file never keeps the application down. The early check in `maintenance.stub.php` validates the
-     * state the same way.
+     * Returns the current state, or `null` when maintenance mode is disabled. A state that can't be read or parsed counts
+     * as disabled, so a broken file never keeps maintenance mode enabled. The early check in `maintenance.stub.php`
+     * validates the state the same way.
      */
     public function current(): ?MaintenanceModeState
     {
@@ -47,12 +47,12 @@ final readonly class MaintenanceMode
             return null;
         }
 
-        if (! is_array($data) || ! is_int($data['down_since'] ?? null)) {
+        if (! is_array($data) || ! is_int($data['enabled_since'] ?? null)) {
             return null;
         }
 
         return new MaintenanceModeState(
-            downSince: DateTime::fromTimestamp($data['down_since']),
+            enabledSince: DateTime::fromTimestamp($data['enabled_since']),
             retry: is_int($data['retry'] ?? null) ? $data['retry'] : null,
             excludedPaths: is_array($data['excluded_paths'] ?? null) ? array_values(array_filter($data['excluded_paths'], is_string(...))) : [],
         );
@@ -70,7 +70,7 @@ final readonly class MaintenanceMode
         $temporary = $this->path(self::FILENAME . '.tmp');
 
         Filesystem\write_json($temporary, [
-            'down_since' => $state->downSince->getTimestamp()->getSeconds(),
+            'enabled_since' => $state->enabledSince->getTimestamp()->getSeconds(),
             'retry' => $state->retry,
             'excluded_paths' => $state->excludedPaths,
         ]);

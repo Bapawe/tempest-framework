@@ -1,81 +1,81 @@
 ---
 title: Maintenance mode
-description: "Take your application down while you deploy, migrate or repair it, so that visitors get a `503 Service Unavailable` instead of a broken page."
+description: "Enable maintenance mode while you deploy, migrate or repair your application, so that visitors get a `503 Service Unavailable` instead of a broken page."
 ---
 
 ## Overview
 
-While an application is being deployed, migrated or repaired, visitors can hit half-updated code or a database in the middle of a migration. Maintenance mode prevents this: while the application is down, it answers every HTTP request with a `503 Service Unavailable` instead of handling it.
+While an application is being deployed, migrated or repaired, visitors can hit half-updated code or a database in the middle of a migration. Maintenance mode prevents this: while it is enabled, the application answers every HTTP request with a `503 Service Unavailable` instead of handling it.
 
 The 503 goes through Tempest's normal [exception rendering](./14-exception-handling.md). Clients that accept HTML get an error page, and clients that accept JSON get a JSON error response. Even URLs that don't match any route get a 503 rather than a 404. In the local environment, you see the same page your visitors would, not the development error page.
 
-Maintenance mode covers HTTP only. Console commands and [scheduled tasks](./11-scheduling.md) keep running while the application is down, so you can still run migrations, and bring the application back up.
+Maintenance mode covers HTTP only. Console commands and [scheduled tasks](./11-scheduling.md) keep running while maintenance mode is enabled, so you can still run migrations, and disable maintenance mode again.
 
-## Taking the application down
+## Enabling maintenance mode
 
-The `{txt}maintenance:enable` command takes the application down, and `{txt}maintenance:disable` brings it back up:
+The `{txt}maintenance:enable` command enables maintenance mode, and `{txt}maintenance:disable` disables it:
 
 ```console
 <dim>./tempest maintenance:enable</dim>
 <dim>./tempest maintenance:disable</dim>
 ```
 
-Both commands can safely be run more than once. Running `{txt}maintenance:enable` while the application is already down keeps the original time it went down, and prints that the application was already down. Running `{txt}maintenance:disable` while the application is already up prints a note and does nothing else.
+Both commands can safely be run more than once. Running `{txt}maintenance:enable` while maintenance mode is already enabled updates its settings but keeps the original time it was enabled, and prints `Maintenance mode was already enabled, its settings are updated.` Running `{txt}maintenance:disable` while maintenance mode is not enabled prints `Maintenance mode was not enabled.` and does nothing else.
 
 The application checks maintenance mode on every request, so both commands take effect immediately, including on workers that are already running.
 
 ### Telling clients when to try again
 
-You may pass the `--retry` option to tell clients how many seconds you expect the application to be down:
+You may pass the `--retry` option to tell clients how many seconds you expect maintenance mode to stay enabled:
 
 ```console
 <dim>./tempest maintenance:enable --retry=600</dim>
 ```
 
-Every 503 response will then carry a `{txt}{:hl-property:Retry-After:}: 600` header, which crawlers and uptime monitors use to wait before trying again, instead of recording the downtime as a failure.
+Every 503 response will then carry a `{txt}{:hl-property:Retry-After:}: 600` header, which crawlers and uptime monitors use to wait before trying again, instead of recording the 503 responses as failures.
 
 The retry value must be a whole number of seconds, at least `1`. Lower values such as `--retry=0` are rejected with an error, the command exits with the `INVALID` exit code, and maintenance mode is left as it was.
 
-Without `--retry`, the `{txt}{:hl-property:Retry-After:}` header is left out entirely. There is no default value. Running `{txt}maintenance:enable` again while the application is down replaces the retry value with the new one, or clears it when `--retry` is omitted.
+Without `--retry`, the `{txt}{:hl-property:Retry-After:}` header is left out entirely. There is no default value. Running `{txt}maintenance:enable` again while maintenance mode is enabled replaces the retry value with the new one, or clears it when `--retry` is omitted.
 
 ### Confirmation in production
 
-In the production and staging environments, `{txt}maintenance:enable` asks for confirmation before taking the application down. Declining leaves the application up, and the command exits with the `CANCELLED` exit code. In other environments, such as local, it doesn't ask.
+In the production and staging environments, `{txt}maintenance:enable` asks for confirmation before enabling maintenance mode. Declining leaves maintenance mode disabled, and the command exits with the `CANCELLED` exit code. In other environments, such as local, it doesn't ask.
 
-`{txt}maintenance:disable` and `{txt}maintenance:status` never ask for confirmation, so that bringing the application back up is never slowed down.
+`{txt}maintenance:disable` and `{txt}maintenance:status` never ask for confirmation, so that disabling maintenance mode is never slowed down.
 
 ## Checking the status
 
-The `{txt}maintenance:status` command tells you whether the application is down. When it is up, it prints the following:
+The `{txt}maintenance:status` command tells you whether maintenance mode is enabled. When it is disabled, it prints the following:
 
 ```console
 <dim>./tempest maintenance:status</dim>
 
-The application is up.
+Maintenance mode is disabled.
 ```
 
-When the application is down, it prints since when, and the retry value. Without a retry value, the second line says that 503 responses carry no `Retry-After` header.
+When maintenance mode is enabled, it prints since when, and the retry value. Without a retry value, the second line says that 503 responses carry no `Retry-After` header.
 
 ```console
 <dim>./tempest maintenance:status</dim>
 
-The application has been down since 2025-03-14 09:26:53 (UTC).
+Maintenance mode has been enabled since 2025-03-14 09:26:53 (UTC).
 Clients are told to retry after 600 seconds.
 ```
 
-The command exits with `0` when the application is up and `1` when the application is down. A non-zero exit code means "down", not that the command failed. This allows scripts to branch on the state without parsing the output:
+The command exits with `0` (`SUCCESS`) when maintenance mode is disabled and `1` (`ERROR`) when it is enabled. The non-zero exit code means "maintenance mode is enabled", not that the command failed, which is why the output above is an info message rather than a warning. This allows scripts to branch on the state without parsing the output:
 
 ```sh
 {:hl-keyword:if:} ./tempest maintenance:status; {:hl-keyword:then:}
-    {:hl-keyword:echo:} "The application is up"
+    {:hl-keyword:echo:} "Maintenance mode is disabled"
 {:hl-keyword:else:}
-    {:hl-keyword:echo:} "The application is down"
+    {:hl-keyword:echo:} "Maintenance mode is enabled"
 {:hl-keyword:fi:}
 ```
 
 ## Excluded paths
 
-Some endpoints must keep working while the application is down, such as health checks or payment webhooks. You may list these as excluded paths by creating a `maintenance.config.php` file. Requests to an excluded path are handled normally while the application is down. No paths are excluded by default.
+Some endpoints must keep working while maintenance mode is enabled, such as health checks or payment webhooks. You may list these as excluded paths by creating a `maintenance.config.php` file. Requests to an excluded path are handled normally while maintenance mode is enabled. No paths are excluded by default.
 
 ```php app/maintenance.config.php
 use Tempest\Router\Maintenance\MaintenanceConfig;
@@ -98,7 +98,7 @@ An excluded path is either an exact path or a prefix followed by a trailing `*`.
 
 Since requests to excluded paths are handled normally, a URL below an excluded prefix that doesn't match any route still returns a 404.
 
-The excluded paths are saved when the application goes down. If you change them while the application is down, run `{txt}maintenance:enable` again for the change to take effect.
+The excluded paths are saved when maintenance mode is enabled. If you change them while maintenance mode is enabled, run `{txt}maintenance:enable` again for the change to take effect.
 
 ## Customizing the maintenance page
 
@@ -136,7 +136,7 @@ final class MaintenancePageRenderer implements ExceptionRenderer
 
 The `{txt}{:hl-property:Retry-After:}` header is added to the response your renderer returns, so you don't need to set it yourself. Requests that your renderer doesn't handle, such as JSON requests in the example above, still get Tempest's default 503 response.
 
-`{txt}maintenance:enable` renders the maintenance page once, when the application goes down, for the [early check](#covering-the-whole-deploy). If you change the page while the application is down, run `{txt}maintenance:enable` again for the change to take effect. If the page can't be rendered, the command prints a warning and uses Tempest's built-in 503 page instead.
+`{txt}maintenance:enable` renders the maintenance page once, when maintenance mode is enabled, for the [early check](#covering-the-whole-deploy). If you change the page while maintenance mode is enabled, run `{txt}maintenance:enable` again for the change to take effect. If the page can't be rendered, the command prints a warning and uses Tempest's built-in 503 page instead.
 
 ## Deploy scripts
 
@@ -151,7 +151,7 @@ In a [deployment script](../5-extra-topics/03-deployments.md), pass the `--force
 ```
 
 :::warning
-Don't use `--no-interaction` for this. Without anyone to answer, the confirmation falls back to "no", so `{txt}maintenance:enable --no-interaction` cancels and leaves the application up in production and staging.
+Don't use `--no-interaction` for this. Without anyone to answer, the confirmation falls back to "no", so `{txt}maintenance:enable --no-interaction` cancels and leaves maintenance mode disabled in production and staging.
 :::
 
 ## Covering the whole deploy
@@ -172,7 +172,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 HttpApplication::boot(__DIR__ . '/../')->run();
 ```
 
-`{txt}maintenance:enable` places `.tempest/maintenance.php` next to the maintenance state, and `{txt}maintenance:disable` removes it. While the application is down, it answers requests with a 503 using only plain PHP, so it works even when the `vendor` directory can't be loaded. It sends the `{txt}{:hl-property:Retry-After:}` header and the HTML or JSON page that `{txt}maintenance:enable` rendered, and lets requests to [excluded paths](#excluded-paths) through to your application. If the maintenance state is missing or can't be read, it lets every request through, so a leftover file never keeps your application down. The rest of Tempest treats such a state the same way: the application counts as up, `{txt}maintenance:status` says so, and `{txt}maintenance:disable` removes the leftover files.
+`{txt}maintenance:enable` places `.tempest/maintenance.php` next to the maintenance state, and `{txt}maintenance:disable` removes it. While maintenance mode is enabled, it answers requests with a 503 using only plain PHP, so it works even when the `vendor` directory can't be loaded. It sends the `{txt}{:hl-property:Retry-After:}` header and the HTML or JSON page that `{txt}maintenance:enable` rendered, and lets requests to [excluded paths](#excluded-paths) through to your application. If the maintenance state is missing or can't be read, it lets every request through, so a leftover file never keeps maintenance mode enabled. The rest of Tempest treats such a state the same way: maintenance mode counts as disabled, `{txt}maintenance:status` says so, and `{txt}maintenance:disable` removes the leftover files.
 
 New applications include this check in `public/index.php`. If your application was created before, add the `if` block above the line that requires `vendor/autoload.php`. If you haven't changed `public/index.php`, you may instead run `{txt}tempest install framework` and let it override that file. If you pass a custom `internalStorage` directory to `HttpApplication::boot()`, change `.tempest` in the path to that directory.
 
@@ -180,7 +180,7 @@ Without the check, maintenance mode still works once the application has booted,
 
 ### Release directories
 
-If you deploy each release to its own directory and switch a symlink between them, share the `.tempest` directory between releases, as you would `.env`. Otherwise, the new release starts without the maintenance state, and is up as soon as the symlink switches, before your deploy script runs `{txt}maintenance:disable`.
+If you deploy each release to its own directory and switch a symlink between them, share the `.tempest` directory between releases, as you would `.env`. Otherwise, the new release starts without the maintenance state, and handles requests as soon as the symlink switches, before your deploy script runs `{txt}maintenance:disable`.
 
 ## Limitations
 

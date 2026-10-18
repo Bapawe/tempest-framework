@@ -25,7 +25,7 @@ final readonly class MaintenanceEnableCommand
 
     #[ConsoleCommand(
         name: 'maintenance:enable',
-        description: 'Enables maintenance mode, taking the application down so that HTTP requests get a 503',
+        description: 'Enables maintenance mode, so that HTTP requests get a 503',
         middleware: [ForceMiddleware::class, CautionMiddleware::class],
     )]
     public function __invoke(
@@ -42,21 +42,21 @@ final readonly class MaintenanceEnableCommand
         $page = $this->renderPage($retry);
 
         if ($current instanceof MaintenanceModeState) {
-            $this->maintenanceMode->enable(new MaintenanceModeState(downSince: $current->downSince, retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
-            $this->console->info('The application was already down.');
+            $this->maintenanceMode->enable(new MaintenanceModeState(enabledSince: $current->enabledSince, retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
+            $this->console->info('Maintenance mode was already enabled, its settings are updated.');
 
             return ExitCode::SUCCESS;
         }
 
-        $this->maintenanceMode->enable(new MaintenanceModeState(downSince: $this->clock->now(), retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
-        $this->console->success('The application is now down.');
+        $this->maintenanceMode->enable(new MaintenanceModeState(enabledSince: $this->clock->now(), retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
+        $this->console->success('Maintenance mode is now enabled.');
 
         return ExitCode::SUCCESS;
     }
 
     /**
      * Renders the page served while the application can't boot, falling back to the built-in page so that a broken
-     * error page never keeps the application from going down.
+     * error page never keeps maintenance mode from being enabled.
      */
     private function renderPage(?int $retry): MaintenancePage
     {

@@ -68,7 +68,7 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     #[Test]
     #[TestWith([self::INSTALLER_INDEX])]
     #[TestWith([self::REPOSITORY_INDEX])]
-    public function requests_get_a_503_while_down_even_when_vendor_cannot_be_loaded(string $index): void
+    public function requests_get_a_503_while_enabled_even_when_vendor_cannot_be_loaded(string $index): void
     {
         $this->serves($index);
         $this->console->call('maintenance:enable')->assertSuccess();
@@ -148,7 +148,7 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     #[TestWith(['/health', '/health?probe=1'])]
     #[TestWith(['/webhooks/*', '/webhooks/stripe'])]
     #[TestWith(['/webhooks/*', '/webhooks/stripe/events'])]
-    public function excluded_paths_reach_the_application_while_down(string $pattern, string $path): void
+    public function excluded_paths_reach_the_application_while_enabled(string $pattern, string $path): void
     {
         $this->container->config(new MaintenanceConfig(excludedPaths: [$pattern]));
         $this->console->call('maintenance:enable')->assertSuccess();
@@ -197,10 +197,10 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['{"down_since":'])]
+    #[TestWith(['{"enabled_since":'])]
     #[TestWith(['{"retry":600}'])]
-    #[TestWith(['{"down_since":"yesterday"}'])]
-    #[TestWith(['{"down_since":"1741944413"}'])]
+    #[TestWith(['{"enabled_since":"yesterday"}'])]
+    #[TestWith(['{"enabled_since":"1741944413"}'])]
     public function a_broken_maintenance_state_lets_requests_through(string $json): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
@@ -219,7 +219,7 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     public function excluded_paths_that_are_not_strings_are_skipped(string $excludedPaths, string $path, int $status): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->applicationRoot . '/.tempest/maintenance.json', "{\"down_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
+        write_file($this->applicationRoot . '/.tempest/maintenance.json', "{\"enabled_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
 
         $this->assertSame($status, $this->request($path)->getStatusCode());
     }
@@ -252,7 +252,7 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
             ->call('maintenance:enable')
             ->assertSuccess()
             ->assertContains('The maintenance page could not be rendered')
-            ->assertContains('The application is now down');
+            ->assertContains('Maintenance mode is now enabled.');
         $this->vendorIsBroken();
 
         $html = $this->request('/anything', ['Accept' => 'text/html']);

@@ -28,7 +28,7 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
     }
 
     #[Test]
-    public function an_exact_excluded_path_stays_reachable_while_down(): void
+    public function an_exact_excluded_path_stays_reachable_while_enabled(): void
     {
         $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
 
@@ -108,7 +108,7 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
     }
 
     #[Test]
-    public function an_unknown_route_under_an_excluded_prefix_returns_a_404_while_down(): void
+    public function an_unknown_route_under_an_excluded_prefix_returns_a_404_while_enabled(): void
     {
         $this->container->config(new MaintenanceConfig(excludedPaths: ['/webhooks/*']));
 
@@ -120,7 +120,7 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
     }
 
     #[Test]
-    public function paths_that_are_not_excluded_still_get_a_503_while_down(): void
+    public function paths_that_are_not_excluded_still_get_a_503_while_enabled(): void
     {
         $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
 
@@ -146,7 +146,7 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
     }
 
     #[Test]
-    public function excluded_paths_added_while_down_apply_after_enabling_again(): void
+    public function excluded_paths_added_while_enabled_apply_after_enabling_again(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
         $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
@@ -163,7 +163,7 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
     }
 
     #[Test]
-    public function excluded_paths_removed_while_down_stay_reachable_until_enabling_again(): void
+    public function excluded_paths_removed_while_enabled_stay_reachable_until_enabling_again(): void
     {
         $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
         $this->console->call('maintenance:enable')->assertSuccess();

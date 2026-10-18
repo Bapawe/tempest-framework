@@ -17,22 +17,22 @@ final readonly class MaintenanceDisableCommand
 
     #[ConsoleCommand(
         name: 'maintenance:disable',
-        description: 'Disables maintenance mode, bringing the application back up',
+        description: 'Disables maintenance mode, so that HTTP requests are handled again',
     )]
     public function __invoke(): ExitCode
     {
-        $wasDown = $this->maintenanceMode->current() instanceof MaintenanceModeState;
+        $wasEnabled = $this->maintenanceMode->current() instanceof MaintenanceModeState;
 
         // Also clears whatever a broken state left behind
         $this->maintenanceMode->disable();
 
-        if (! $wasDown) {
-            $this->console->info('The application is already up.');
+        if (! $wasEnabled) {
+            $this->console->info('Maintenance mode was not enabled.');
 
             return ExitCode::SUCCESS;
         }
 
-        $this->console->success('The application is now up.');
+        $this->console->success('Maintenance mode is now disabled.');
 
         return ExitCode::SUCCESS;
     }

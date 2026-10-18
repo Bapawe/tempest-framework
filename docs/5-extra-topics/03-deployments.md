@@ -48,9 +48,9 @@ As you can see, there are a number of steps involved to deploying a Tempest proj
 - Compiling frontend assets
 - Finally, regenerating static pages if you're using them
 
-To keep visitors from reaching a half-updated application while these steps run, you can take it down with `{txt}maintenance:enable --force` at the start of the script and bring it back up with `{txt}maintenance:disable` at the end. See [maintenance mode](../2-features/21-maintenance-mode.md) for details.
+To keep visitors from reaching a half-updated application while these steps run, you can enable maintenance mode with `{txt}maintenance:enable --force` at the start of the script and disable it with `{txt}maintenance:disable` at the end. See [maintenance mode](../2-features/21-maintenance-mode.md) for details.
 
-If you deploy each release to its own directory, share the `.tempest` directory between releases, so that the application stays down when the new release goes live. See [release directories](../2-features/21-maintenance-mode.md#release-directories).
+If you deploy each release to its own directory, share the `.tempest` directory between releases, so that maintenance mode stays enabled when the new release goes live. See [release directories](../2-features/21-maintenance-mode.md#release-directories).
 
 ## Initial installation
 

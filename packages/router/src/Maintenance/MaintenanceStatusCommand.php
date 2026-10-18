@@ -24,10 +24,10 @@ final readonly class MaintenanceStatusCommand
         $state = $this->maintenanceMode->current();
 
         if ($state instanceof MaintenanceModeState) {
-            $since = $state->downSince->format('yyyy-MM-dd HH:mm:ss');
-            $timezone = $state->downSince->getTimezone()->value;
+            $since = $state->enabledSince->format('yyyy-MM-dd HH:mm:ss');
+            $timezone = $state->enabledSince->getTimezone()->value;
 
-            $this->console->warning("The application has been down since {$since} ({$timezone}).");
+            $this->console->info("Maintenance mode has been enabled since {$since} ({$timezone}).");
             $this->console->writeln(match ($state->retry) {
                 null => 'No retry value is set, so 503 responses carry no `Retry-After` header.',
                 default => "Clients are told to retry after {$state->retry} seconds.",
@@ -36,7 +36,7 @@ final readonly class MaintenanceStatusCommand
             return ExitCode::ERROR;
         }
 
-        $this->console->success('The application is up.');
+        $this->console->success('Maintenance mode is disabled.');
 
         return ExitCode::SUCCESS;
     }

@@ -46,7 +46,7 @@ final class MaintenanceModeConfirmationTest extends FrameworkIntegrationTestCase
     #[Test]
     #[TestWith([Environment::PRODUCTION])]
     #[TestWith([Environment::STAGING])]
-    public function declining_the_confirmation_leaves_the_application_up(Environment $environment): void
+    public function declining_the_confirmation_leaves_maintenance_mode_disabled(Environment $environment): void
     {
         $this->container->singleton(Environment::class, $environment);
 
