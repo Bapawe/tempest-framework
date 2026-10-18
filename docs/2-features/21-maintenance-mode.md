@@ -51,19 +51,22 @@ The `{txt}maintenance:status` command tells you whether maintenance mode is enab
 ```console
 <dim>./tempest maintenance:status</dim>
 
-Maintenance mode is disabled.
+<h1>// MAINTENANCE MODE</h1>
+Status <dim>....................................................</dim> DISABLED
 ```
 
-When maintenance mode is enabled, it prints since when, followed by the retry value if one was given.
+When maintenance mode is enabled, it prints since when, followed by the retry value if one was given:
 
 ```console
 <dim>./tempest maintenance:status</dim>
 
-Maintenance mode has been enabled since 2025-03-14 09:26:53 (UTC).
-Clients are told to retry after 600 seconds.
+<h1>// MAINTENANCE MODE</h1>
+Status <dim>.....................................................</dim> ENABLED
+Enabled since <dim>............................</dim> 2025-03-14 09:26:53 (UTC)
+Retry after <dim>............................................</dim> 600 seconds
 ```
 
-The command exits with `0` (`SUCCESS`) when maintenance mode is disabled and `1` (`ERROR`) when it is enabled. The non-zero exit code means "maintenance mode is enabled", not that the command failed, which is why the output above is an info message rather than a warning. This allows scripts to branch on the state without parsing the output:
+The command exits with `0` (`SUCCESS`) when maintenance mode is disabled and `1` (`ERROR`) when it is enabled. The non-zero exit code means "maintenance mode is enabled", not that the command failed, which is why the status shows in yellow instead of being reported as an error. This allows scripts to branch on the state without parsing the output:
 
 ```sh
 {:hl-keyword:if:} ./tempest maintenance:status; {:hl-keyword:then:}

@@ -23,20 +23,23 @@ final readonly class MaintenanceStatusCommand
     {
         $state = $this->maintenanceMode->current();
 
+        $this->console->header('Maintenance mode');
+
         if ($state instanceof MaintenanceModeState) {
             $since = $state->enabledSince->format('yyyy-MM-dd HH:mm:ss');
             $timezone = $state->enabledSince->getTimezone()->value;
 
-            $this->console->info("Maintenance mode has been enabled since {$since} ({$timezone}).");
+            $this->console->keyValue('Status', '<style="fg-yellow bold">ENABLED</style>');
+            $this->console->keyValue('Enabled since', "{$since} ({$timezone})");
 
             if ($state->retry !== null) {
-                $this->console->writeln("Clients are told to retry after {$state->retry} seconds.");
+                $this->console->keyValue('Retry after', "{$state->retry} seconds");
             }
 
             return ExitCode::ERROR;
         }
 
-        $this->console->success('Maintenance mode is disabled.');
+        $this->console->keyValue('Status', '<style="fg-green bold">DISABLED</style>');
 
         return ExitCode::SUCCESS;
     }

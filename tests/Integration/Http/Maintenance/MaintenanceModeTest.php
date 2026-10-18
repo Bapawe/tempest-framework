@@ -244,7 +244,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertSuccess()
-            ->assertContains('Maintenance mode is disabled.');
+            ->assertContains('DISABLED');
     }
 
     #[Test]
@@ -295,8 +295,9 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('Maintenance mode has been enabled since')
-            ->assertDoesNotContain('retry');
+            ->assertContains('ENABLED')
+            ->assertContains('Enabled since')
+            ->assertDoesNotContain('Retry after');
     }
 
     #[Test]
@@ -334,11 +335,14 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertSuccess()
-            ->assertContains('Maintenance mode is disabled.');
+            ->assertContains('MAINTENANCE MODE')
+            ->assertContains('Status')
+            ->assertContains('DISABLED')
+            ->assertDoesNotContain('Enabled since');
     }
 
     #[Test]
-    public function status_reports_enabled_since_when_as_info_and_errors_while_enabled(): void
+    public function status_reports_enabled_since_when_and_errors_while_enabled(): void
     {
         $this->clock('2025-03-14 09:26:53');
 
@@ -347,7 +351,11 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('𝓲 // Maintenance mode has been enabled since 2025-03-14 09:26:53 (UTC).');
+            ->assertContains('MAINTENANCE MODE')
+            ->assertContains('Status')
+            ->assertContains('ENABLED')
+            ->assertContains('Enabled since')
+            ->assertContains('2025-03-14 09:26:53 (UTC)');
     }
 
     #[Test]
@@ -358,7 +366,8 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('Clients are told to retry after 600 seconds');
+            ->assertContains('Retry after')
+            ->assertContains('600 seconds');
     }
 
     #[Test]
@@ -369,8 +378,9 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('Maintenance mode has been enabled since')
-            ->assertDoesNotContain('retry');
+            ->assertContains('ENABLED')
+            ->assertContains('Enabled since')
+            ->assertDoesNotContain('Retry after');
     }
 
     #[Test]
@@ -418,7 +428,8 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
 
         $this->console
             ->call('maintenance:status')
-            ->assertContains('Clients are told to retry after 120 seconds');
+            ->assertContains('Retry after')
+            ->assertContains('120 seconds');
     }
 
     #[Test]
@@ -434,7 +445,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
 
         $this->console
             ->call('maintenance:status')
-            ->assertDoesNotContain('retry');
+            ->assertDoesNotContain('Retry after');
     }
 
     #[Test]
@@ -451,8 +462,11 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('𝓲 // Maintenance mode has been enabled since 2025-03-14 09:26:53 (UTC).')
-            ->assertContains('Clients are told to retry after 600 seconds');
+            ->assertContains('ENABLED')
+            ->assertContains('Enabled since')
+            ->assertContains('2025-03-14 09:26:53 (UTC)')
+            ->assertContains('Retry after')
+            ->assertContains('600 seconds');
     }
 
     #[Test]
@@ -469,7 +483,9 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('𝓲 // Maintenance mode has been enabled since 2025-03-14 09:26:53 (UTC).');
+            ->assertContains('ENABLED')
+            ->assertContains('Enabled since')
+            ->assertContains('2025-03-14 09:26:53 (UTC)');
     }
 
     #[Test]
@@ -481,7 +497,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertSuccess()
-            ->assertContains('Maintenance mode is disabled.');
+            ->assertContains('DISABLED');
     }
 
     #[Test]
@@ -492,7 +508,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertSuccess()
-            ->assertContains('Maintenance mode is disabled.');
+            ->assertContains('DISABLED');
 
         $this->container->singleton(Environment::class, Environment::LOCAL);
         $this->console->call('maintenance:enable')->assertSuccess();
@@ -501,7 +517,8 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('Maintenance mode has been enabled since');
+            ->assertContains('ENABLED')
+            ->assertContains('Enabled since');
     }
 
     #[Test]
