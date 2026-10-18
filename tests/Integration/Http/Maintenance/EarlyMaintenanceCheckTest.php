@@ -10,7 +10,10 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Process\Process;
+use Tempest\Http\GenericRequest;
+use Tempest\Http\Request;
 use Tempest\Router\Maintenance\MaintenanceConfig;
+use Tempest\Router\Maintenance\MaintenancePage;
 use Tempest\Router\RouteConfig;
 use Tempest\Support\Priority;
 use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
@@ -219,6 +222,25 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
         write_file($this->applicationRoot . '/.tempest/maintenance.json', "{\"down_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
 
         $this->assertSame($status, $this->request($path)->getStatusCode());
+    }
+
+    #[Test]
+    public function the_maintenance_page_renders_from_the_console_where_no_request_is_bound(): void
+    {
+        $this->container->unregister(Request::class);
+        $this->container->unregister(GenericRequest::class);
+
+        $this->console
+            ->call('maintenance:enable')
+            ->assertSuccess()
+            ->assertDoesNotContain('The maintenance page could not be rendered');
+        $this->vendorIsBroken();
+
+        $html = $this->request('/anything', ['Accept' => 'text/html']);
+
+        $this->assertSame(503, $html->getStatusCode());
+        $this->assertNotSame(MaintenancePage::builtIn()->html, (string) $html->getBody());
+        $this->assertFalse($this->container->has(Request::class));
     }
 
     #[Test]
