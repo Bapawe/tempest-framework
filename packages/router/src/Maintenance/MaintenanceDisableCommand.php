@@ -12,7 +12,7 @@ final readonly class MaintenanceDisableCommand
 {
     public function __construct(
         private Console $console,
-        private MaintenanceModeStore $store,
+        private MaintenanceMode $maintenanceMode,
     ) {}
 
     #[ConsoleCommand(
@@ -21,10 +21,10 @@ final readonly class MaintenanceDisableCommand
     )]
     public function __invoke(): ExitCode
     {
-        $wasDown = $this->store->current() instanceof MaintenanceModeState;
+        $wasDown = $this->maintenanceMode->current() instanceof MaintenanceModeState;
 
         // Also clears whatever a broken state left behind
-        $this->store->disable();
+        $this->maintenanceMode->disable();
 
         if (! $wasDown) {
             $this->console->info('The application is already up.');

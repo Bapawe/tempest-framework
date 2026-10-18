@@ -15,7 +15,7 @@
 
     $state = json_decode($json, associative: true);
 
-    // The same validation as `FileMaintenanceModeStore::current()`
+    // The same validation as `MaintenanceMode::current()`
     if (! is_array($state) || ! is_int($state['down_since'] ?? null)) {
         return;
     }

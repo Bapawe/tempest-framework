@@ -186,4 +186,3 @@ If you deploy each release to its own directory and switch a symlink between the
 
 - **Static pages stay reachable.** [Static pages](./13-static-pages.md) generated with `{txt}static:generate` are served directly by your web server without booting Tempest, so maintenance mode doesn't apply to them.
 - **Maintenance mode only applies to the current server.** The state is stored as a file in Tempest's internal storage directory (`.tempest` by default). If your application runs on several servers, run `{txt}maintenance:enable` and `{txt}maintenance:disable` on each of them.
-- **The early check only works with the file-based store.** The [check before the autoloader](#covering-the-whole-deploy) reads the maintenance state file directly. If you replace the store that maintenance mode uses, only the check after booting applies.

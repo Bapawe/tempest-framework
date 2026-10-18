@@ -22,12 +22,12 @@ use Tempest\Support\Priority;
 final readonly class CheckMaintenanceModeMiddleware implements HttpMiddleware
 {
     public function __construct(
-        private MaintenanceModeStore $store,
+        private MaintenanceMode $maintenanceMode,
     ) {}
 
     public function __invoke(Request $request, HttpMiddlewareCallable $next): Response
     {
-        $state = $this->store->current();
+        $state = $this->maintenanceMode->current();
 
         if ($state instanceof MaintenanceModeState && ! $this->isExcluded($request->path, $state->excludedPaths)) {
             throw new MaintenanceModeWasActive(retry: $state->retry);

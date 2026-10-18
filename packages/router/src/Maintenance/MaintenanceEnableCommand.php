@@ -17,7 +17,7 @@ final readonly class MaintenanceEnableCommand
 {
     public function __construct(
         private Console $console,
-        private MaintenanceModeStore $store,
+        private MaintenanceMode $maintenanceMode,
         private Clock $clock,
         private MaintenancePagePrerenderer $prerenderer,
         private MaintenanceConfig $config,
@@ -38,17 +38,17 @@ final readonly class MaintenanceEnableCommand
             return ExitCode::INVALID;
         }
 
-        $current = $this->store->current();
+        $current = $this->maintenanceMode->current();
         $page = $this->renderPage($retry);
 
         if ($current instanceof MaintenanceModeState) {
-            $this->store->enable(new MaintenanceModeState(downSince: $current->downSince, retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
+            $this->maintenanceMode->enable(new MaintenanceModeState(downSince: $current->downSince, retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
             $this->console->info('The application was already down.');
 
             return ExitCode::SUCCESS;
         }
 
-        $this->store->enable(new MaintenanceModeState(downSince: $this->clock->now(), retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
+        $this->maintenanceMode->enable(new MaintenanceModeState(downSince: $this->clock->now(), retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
         $this->console->success('The application is now down.');
 
         return ExitCode::SUCCESS;

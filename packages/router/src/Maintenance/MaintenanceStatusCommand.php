@@ -12,7 +12,7 @@ final readonly class MaintenanceStatusCommand
 {
     public function __construct(
         private Console $console,
-        private MaintenanceModeStore $store,
+        private MaintenanceMode $maintenanceMode,
     ) {}
 
     #[ConsoleCommand(
@@ -21,7 +21,7 @@ final readonly class MaintenanceStatusCommand
     )]
     public function __invoke(): ExitCode
     {
-        $state = $this->store->current();
+        $state = $this->maintenanceMode->current();
 
         if ($state instanceof MaintenanceModeState) {
             $since = $state->downSince->format('yyyy-MM-dd HH:mm:ss');

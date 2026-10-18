@@ -14,7 +14,7 @@ use Tempest\Support\Json\Exception\JsonException;
 /**
  * Keeps the maintenance mode state in a file in the framework's internal storage directory. It only affects the server it runs on.
  */
-final readonly class FileMaintenanceModeStore implements MaintenanceModeStore
+final readonly class MaintenanceMode
 {
     private const string FILENAME = 'maintenance.json';
 
@@ -29,8 +29,9 @@ final readonly class FileMaintenanceModeStore implements MaintenanceModeStore
     ) {}
 
     /**
-     * A state that can't be read or parsed counts as up, so a broken file never keeps the application down. The early
-     * check in `maintenance.stub.php` validates the state the same way.
+     * Returns the current state, or `null` when the application is up. A state that can't be read or parsed counts as
+     * up, so a broken file never keeps the application down. The early check in `maintenance.stub.php` validates the
+     * state the same way.
      */
     public function current(): ?MaintenanceModeState
     {
@@ -93,7 +94,7 @@ final readonly class FileMaintenanceModeStore implements MaintenanceModeStore
     }
 
     /**
-     * The internal storage directory is resolved on every call, since it may change after the store was created.
+     * The internal storage directory is resolved on every call, since it may change after this class was created.
      */
     private function path(string $filename): string
     {
