@@ -17,6 +17,7 @@ use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
 use Tests\Tempest\Integration\Http\Maintenance\Fixtures\BrokenMaintenancePageRenderer;
 use Tests\Tempest\Integration\Http\Maintenance\Fixtures\MaintenancePageRenderer;
 
+use function Tempest\Support\Filesystem\copy_file;
 use function Tempest\Support\Filesystem\create_directory;
 use function Tempest\Support\Filesystem\create_temporary_directory;
 use function Tempest\Support\Filesystem\delete_directory;
@@ -24,23 +25,17 @@ use function Tempest\Support\Filesystem\delete_file;
 use function Tempest\Support\Filesystem\write_file;
 
 /**
- * Serves a minimal `public/index.php` with PHP's built-in server, so requests go through the early maintenance
+ * Serves a real `public/index.php` with PHP's built-in server, so requests go through the early maintenance
  * check before the autoloader. The `vendor/autoload.php` next to it is a stand-in: it either prints "booted",
- * like an application that boots normally, or throws, like a `vendor/` that's being reinstalled.
+ * and exits like an application that boots normally, or throws, like a `vendor/` that's being reinstalled.
  *
  * @internal
  */
 final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
 {
-    private const string INDEX = <<<'PHP'
-    <?php
+    private const string INSTALLER_INDEX = __DIR__ . '/../../../../src/Tempest/Framework/Installers/index.php';
 
-    if (is_file($maintenance = __DIR__ . '/../.tempest/maintenance.php')) {
-        require $maintenance;
-    }
-
-    require_once __DIR__ . '/../vendor/autoload.php';
-    PHP;
+    private const string REPOSITORY_INDEX = __DIR__ . '/../../../../public/index.php';
 
     private string $applicationRoot;
 
@@ -54,7 +49,7 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
 
         $this->applicationRoot = create_temporary_directory('tempest-early-maintenance-');
         create_directory($this->applicationRoot . '/.tempest');
-        write_file($this->applicationRoot . '/public/index.php', self::INDEX);
+        $this->serves(self::INSTALLER_INDEX);
         $this->bootsNormally();
 
         $this->kernel->internalStorage = $this->applicationRoot . '/.tempest';
@@ -68,8 +63,11 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function requests_get_a_503_while_down_even_when_vendor_cannot_be_loaded(): void
+    #[TestWith([self::INSTALLER_INDEX])]
+    #[TestWith([self::REPOSITORY_INDEX])]
+    public function requests_get_a_503_while_down_even_when_vendor_cannot_be_loaded(string $index): void
     {
+        $this->serves($index);
         $this->console->call('maintenance:enable')->assertSuccess();
         $this->vendorIsBroken();
 
@@ -230,7 +228,12 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
 
     private function bootsNormally(): void
     {
-        write_file($this->applicationRoot . '/vendor/autoload.php', '<?php echo "booted";');
+        write_file($this->applicationRoot . '/vendor/autoload.php', '<?php echo "booted"; exit;');
+    }
+
+    private function serves(string $index): void
+    {
+        copy_file($index, $this->applicationRoot . '/public/index.php', overwrite: true);
     }
 
     private function vendorIsBroken(): void

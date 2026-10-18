@@ -50,6 +50,8 @@ As you can see, there are a number of steps involved to deploying a Tempest proj
 
 To keep visitors from reaching a half-updated application while these steps run, you can take it down with `{txt}maintenance:enable --force` at the start of the script and bring it back up with `{txt}maintenance:disable` at the end. See [maintenance mode](../2-features/21-maintenance-mode.md) for details.
 
+If you deploy each release to its own directory, share the `.tempest` directory between releases, so that the application stays down when the new release goes live. See [release directories](../2-features/21-maintenance-mode.md#release-directories).
+
 ## Initial installation
 
 While a deploy script handles day-by-day deployments, initial server setup requires a number of one-time steps.

@@ -98,6 +98,8 @@ An excluded path is either an exact path or a prefix followed by a trailing `*`.
 
 Since requests to excluded paths are handled normally, a URL below an excluded prefix that doesn't match any route still returns a 404.
 
+The excluded paths are saved when the application goes down. If you change them while the application is down, run `{txt}maintenance:enable` again for the change to take effect.
+
 ## Customizing the maintenance page
 
 The 503 is rendered from a {b`Tempest\Router\Maintenance\MaintenanceModeWasActive`} exception, not from an {b`Tempest\Http\HttpRequestFailed`}. A [custom exception renderer](./14-exception-handling.md#customizing-exception-rendering) that checks for `HttpRequestFailed` and a `503` status won't see it. To use your own maintenance page, match `MaintenanceModeWasActive` instead:
@@ -134,6 +136,8 @@ final class MaintenancePageRenderer implements ExceptionRenderer
 
 The `{txt}{:hl-property:Retry-After:}` header is added to the response your renderer returns, so you don't need to set it yourself. Requests that your renderer doesn't handle, such as JSON requests in the example above, still get Tempest's default 503 response.
 
+`{txt}maintenance:enable` renders the maintenance page once, when the application goes down, for the [early check](#covering-the-whole-deploy). If you change the page while the application is down, run `{txt}maintenance:enable` again for the change to take effect. If the page can't be rendered, the command prints a warning and uses Tempest's built-in 503 page instead.
+
 ## Deploy scripts
 
 In a [deployment script](../5-extra-topics/03-deployments.md), pass the `--force` flag to `{txt}maintenance:enable`, so it doesn't ask for confirmation in production:
@@ -150,7 +154,36 @@ In a [deployment script](../5-extra-topics/03-deployments.md), pass the `--force
 Don't use `--no-interaction` for this. Without anyone to answer, the confirmation falls back to "no", so `{txt}maintenance:enable --no-interaction` cancels and leaves the application up in production and staging.
 :::
 
+## Covering the whole deploy
+
+Maintenance mode is normally checked once the application has booted. While `{txt}git pull` or `{txt}composer install` is running, though, the application code or the `vendor` directory is only half updated, so booting can fail before that check is reached, and visitors get a 500 instead of a 503.
+
+To cover that window, `public/index.php` checks for maintenance mode before it loads the autoloader:
+
+```php public/index.php
+use Tempest\Router\HttpApplication;
+
+if (is_file($maintenance = __DIR__ . '/../.tempest/maintenance.php')) {
+    require $maintenance;
+}
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+HttpApplication::boot(__DIR__ . '/../')->run();
+```
+
+`{txt}maintenance:enable` places `.tempest/maintenance.php` next to the maintenance state, and `{txt}maintenance:disable` removes it. While the application is down, it answers requests with a 503 using only plain PHP, so it works even when the `vendor` directory can't be loaded. It sends the `{txt}{:hl-property:Retry-After:}` header and the HTML or JSON page that `{txt}maintenance:enable` rendered, and lets requests to [excluded paths](#excluded-paths) through to your application. If the maintenance state is missing or can't be read, it lets every request through, so a leftover file never keeps your application down.
+
+New applications include this check in `public/index.php`. If your application was created before, add the `if` block above the line that requires `vendor/autoload.php`. If you haven't changed `public/index.php`, you may instead run `{txt}tempest install framework` and let it override that file. If you pass a custom `internalStorage` directory to `HttpApplication::boot()`, change `.tempest` in the path to that directory.
+
+Without the check, maintenance mode still works once the application has booted, including in worker mode, but requests during `{txt}composer install` may fail with a 500.
+
+### Release directories
+
+If you deploy each release to its own directory and switch a symlink between them, share the `.tempest` directory between releases, as you would `.env`. Otherwise, the new release starts without the maintenance state, and is up as soon as the symlink switches, before your deploy script runs `{txt}maintenance:disable`.
+
 ## Limitations
 
 - **Static pages stay reachable.** [Static pages](./13-static-pages.md) generated with `{txt}static:generate` are served directly by your web server without booting Tempest, so maintenance mode doesn't apply to them.
 - **Maintenance mode only applies to the current server.** The state is stored as a file in Tempest's internal storage directory (`.tempest` by default). If your application runs on several servers, run `{txt}maintenance:enable` and `{txt}maintenance:disable` on each of them.
+- **The early check only works with the file-based store.** The [check before the autoloader](#covering-the-whole-deploy) reads the maintenance state file directly. If you replace the store that maintenance mode uses, only the check after booting applies.
