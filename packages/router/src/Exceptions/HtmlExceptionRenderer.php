@@ -17,6 +17,7 @@ use Tempest\Http\Session\SessionManager;
 use Tempest\Http\Status;
 use Tempest\Intl\Translator;
 use Tempest\Reflection\ClassReflector;
+use Tempest\Router\Maintenance\MaintenanceModeWasActive;
 use Tempest\Support\Arr;
 use Tempest\Support\Filesystem;
 use Tempest\Support\Json;
@@ -49,6 +50,7 @@ final readonly class HtmlExceptionRenderer implements ExceptionRenderer
             $throwable instanceof ValidationFailed => $this->renderValidationFailedResponse($throwable),
             $throwable instanceof AccessWasDenied => $this->renderErrorResponse(Status::FORBIDDEN, message: $throwable->accessDecision->message),
             $throwable instanceof HttpRequestFailed => $this->renderHttpRequestFailed($throwable),
+            $throwable instanceof MaintenanceModeWasActive => $this->renderErrorResponse(Status::SERVICE_UNAVAILABLE),
             $throwable instanceof ConvertsToResponse => $throwable->convertToResponse(),
             default => $this->renderErrorResponse(Status::INTERNAL_SERVER_ERROR),
         };
@@ -106,6 +108,11 @@ final readonly class HtmlExceptionRenderer implements ExceptionRenderer
         }
 
         if ($throwable instanceof ValidationFailed) {
+            return false;
+        }
+
+        // Developers should see the same maintenance page as their visitors
+        if ($throwable instanceof MaintenanceModeWasActive) {
             return false;
         }
 

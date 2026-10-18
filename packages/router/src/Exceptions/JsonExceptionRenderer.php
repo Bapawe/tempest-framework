@@ -11,6 +11,7 @@ use Tempest\Http\Response;
 use Tempest\Http\Responses\Json;
 use Tempest\Http\Responses\NotFound;
 use Tempest\Http\Status;
+use Tempest\Router\Maintenance\MaintenanceModeWasActive;
 use Tempest\Support\Arr;
 use Tempest\Support\Priority;
 use Tempest\Validation\Exceptions\ValidationFailed;
@@ -39,6 +40,7 @@ final readonly class JsonExceptionRenderer implements ExceptionRenderer
             $throwable instanceof ValidationFailed => $this->renderValidationFailedResponse($throwable),
             $throwable instanceof AccessWasDenied => $this->renderErrorResponse(Status::FORBIDDEN, message: $throwable->accessDecision->message),
             $throwable instanceof HttpRequestFailed => $this->renderHttpRequestFailed($throwable),
+            $throwable instanceof MaintenanceModeWasActive => $this->renderErrorResponse(Status::SERVICE_UNAVAILABLE),
             $throwable instanceof ConvertsToResponse => $throwable->convertToResponse(),
             default => $this->renderErrorResponse(Status::INTERNAL_SERVER_ERROR, throwable: $throwable),
         };

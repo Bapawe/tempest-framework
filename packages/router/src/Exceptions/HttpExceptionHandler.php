@@ -12,6 +12,7 @@ use Tempest\Http\HttpRequestFailed;
 use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Http\Status;
+use Tempest\Router\Maintenance\MaintenanceModeWasActive;
 use Tempest\Router\ResponseSender;
 use Tempest\Router\RouteConfig;
 use Tempest\Support\Arr;
@@ -60,11 +61,13 @@ final readonly class HttpExceptionHandler implements ExceptionHandler
      */
     private function applyHeaders(Response $response, Throwable $throwable): Response
     {
-        if (! $throwable instanceof HttpRequestFailed) {
-            return $response;
-        }
+        $headers = match (true) {
+            $throwable instanceof HttpRequestFailed => $throwable->headers,
+            $throwable instanceof MaintenanceModeWasActive && $throwable->retry !== null => ['Retry-After' => (string) $throwable->retry],
+            default => [],
+        };
 
-        foreach ($throwable->headers as $name => $values) {
+        foreach ($headers as $name => $values) {
             // Headers keep the casing they were added with, so we look up the existing one to avoid a duplicate
             $existing = $response->getHeader($name);
 
