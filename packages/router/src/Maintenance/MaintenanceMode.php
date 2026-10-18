@@ -12,17 +12,20 @@ use Tempest\Support\Json;
 use Tempest\Support\Json\Exception\JsonException;
 
 /**
- * Keeps the maintenance mode state in a file in the framework's internal storage directory. It only affects the server it runs on.
+ * Keeps the maintenance mode state in a `maintenance` folder in the framework's internal storage directory. It only
+ * affects the server it runs on.
  */
 final readonly class MaintenanceMode
 {
-    private const string FILENAME = 'maintenance.json';
+    private const string DIRECTORY = 'maintenance';
 
-    private const string STUB_FILENAME = 'maintenance.php';
+    private const string STATE_FILENAME = 'state.json';
 
-    private const string HTML_FILENAME = 'maintenance.html';
+    private const string CHECK_FILENAME = 'check.php';
 
-    private const string JSON_BODY_FILENAME = 'maintenance-body.json';
+    private const string HTML_PAGE_FILENAME = 'page.html';
+
+    private const string JSON_PAGE_FILENAME = 'page.json';
 
     public function __construct(
         private Kernel $kernel,
@@ -35,7 +38,7 @@ final readonly class MaintenanceMode
      */
     public function current(): ?MaintenanceModeState
     {
-        $path = $this->path(self::FILENAME);
+        $path = $this->path(self::STATE_FILENAME);
 
         if (! Filesystem\is_file($path)) {
             return null;
@@ -64,10 +67,11 @@ final readonly class MaintenanceMode
      */
     public function enable(MaintenanceModeState $state, MaintenancePage $page): void
     {
-        Filesystem\write_file($this->path(self::HTML_FILENAME), $page->html);
-        Filesystem\write_file($this->path(self::JSON_BODY_FILENAME), $page->json);
+        Filesystem\create_directory($this->directory());
+        Filesystem\write_file($this->path(self::HTML_PAGE_FILENAME), $page->html);
+        Filesystem\write_file($this->path(self::JSON_PAGE_FILENAME), $page->json);
 
-        $temporary = $this->path(self::FILENAME . '.tmp');
+        $temporary = $this->path(self::STATE_FILENAME . '.tmp');
 
         Filesystem\write_json($temporary, [
             'enabled_since' => $state->enabledSince->getTimestamp()->getSeconds(),
@@ -75,29 +79,35 @@ final readonly class MaintenanceMode
             'excluded_paths' => $state->excludedPaths,
         ]);
 
-        Filesystem\move($temporary, $this->path(self::FILENAME), overwrite: true);
-        Filesystem\copy_file(__DIR__ . '/maintenance.stub.php', $this->path(self::STUB_FILENAME), overwrite: true);
+        Filesystem\move($temporary, $this->path(self::STATE_FILENAME), overwrite: true);
+        Filesystem\copy_file(__DIR__ . '/maintenance.stub.php', $this->path(self::CHECK_FILENAME), overwrite: true);
     }
 
     /**
-     * The state goes first, so a stub or bodies left behind by a failure here let requests through.
+     * Removes the folder as a whole, which also clears whatever a broken state left behind. The state goes first, so a
+     * stub or bodies left behind by a failure here let requests through.
      */
     public function disable(): void
     {
-        foreach ([self::FILENAME, self::STUB_FILENAME, self::HTML_FILENAME, self::JSON_BODY_FILENAME] as $filename) {
-            if (! Filesystem\is_file($this->path($filename))) {
-                continue;
-            }
+        if (Filesystem\is_file($this->path(self::STATE_FILENAME))) {
+            Filesystem\delete_file($this->path(self::STATE_FILENAME));
+        }
 
-            Filesystem\delete_file($this->path($filename));
+        if (Filesystem\is_directory($this->directory())) {
+            Filesystem\delete_directory($this->directory());
         }
     }
 
     /**
      * The internal storage directory is resolved on every call, since it may change after this class was created.
      */
+    private function directory(): string
+    {
+        return $this->kernel->internalStorage . '/' . self::DIRECTORY;
+    }
+
     private function path(string $filename): string
     {
-        return $this->kernel->internalStorage . '/' . $filename;
+        return $this->directory() . '/' . $filename;
     }
 }

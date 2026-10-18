@@ -163,7 +163,7 @@ To cover that window, `public/index.php` checks for maintenance mode before it l
 ```php public/index.php
 use Tempest\Router\HttpApplication;
 
-if (is_file($maintenance = __DIR__ . '/../.tempest/maintenance.php')) {
+if (is_file($maintenance = __DIR__ . '/../.tempest/maintenance/check.php')) {
     require $maintenance;
 }
 
@@ -172,7 +172,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 HttpApplication::boot(__DIR__ . '/../')->run();
 ```
 
-`{txt}maintenance:enable` places `.tempest/maintenance.php` next to the maintenance state, and `{txt}maintenance:disable` removes it. While maintenance mode is enabled, it answers requests with a 503 using only plain PHP, so it works even when the `vendor` directory can't be loaded. It sends the `{txt}{:hl-property:Retry-After:}` header and the HTML or JSON page that `{txt}maintenance:enable` rendered, and lets requests to [excluded paths](#excluded-paths) through to your application. If the maintenance state is missing or can't be read, it lets every request through, so a leftover file never keeps maintenance mode enabled. The rest of Tempest treats such a state the same way: maintenance mode counts as disabled, `{txt}maintenance:status` says so, and `{txt}maintenance:disable` removes the leftover files.
+`{txt}maintenance:enable` keeps its files in `.tempest/maintenance/`: the maintenance state in `state.json`, the rendered pages in `page.html` and `page.json`, and the early check in `check.php`. `{txt}maintenance:disable` removes the folder as a whole. While maintenance mode is enabled, the early check answers requests with a 503 using only plain PHP, so it works even when the `vendor` directory can't be loaded. It sends the `{txt}{:hl-property:Retry-After:}` header and the HTML or JSON page that `{txt}maintenance:enable` rendered, and lets requests to [excluded paths](#excluded-paths) through to your application. If the maintenance state is missing or can't be read, it lets every request through, so a leftover file never keeps maintenance mode enabled. The rest of Tempest treats such a state the same way: maintenance mode counts as disabled, `{txt}maintenance:status` says so, and `{txt}maintenance:disable` removes the leftover folder.
 
 New applications include this check in `public/index.php`. If your application was created before, add the `if` block above the line that requires `vendor/autoload.php`. If you haven't changed `public/index.php`, you may instead run `{txt}tempest install framework` and let it override that file. If you pass a custom `internalStorage` directory to `HttpApplication::boot()`, change `.tempest` in the path to that directory.
 

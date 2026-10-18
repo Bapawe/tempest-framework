@@ -1,13 +1,14 @@
 <?php
 
 /*
- * Copied to the internal storage directory by `maintenance:enable`, and included by `public/index.php` before the
- * autoloader, so requests get a 503 even while `vendor/` or the application can't be loaded. It must stay plain PHP
- * with no dependencies. When the state can't be read, it lets the request through.
+ * Copied by `maintenance:enable` as `check.php` into the `maintenance` folder of the internal storage directory, next
+ * to the files it reads, and included by `public/index.php` before the autoloader, so requests get a 503 even while
+ * `vendor/` or the application can't be loaded. It must stay plain PHP with no dependencies. When the state can't be
+ * read, it lets the request through.
  */
 
 (static function (): void {
-    $json = @file_get_contents(__DIR__ . '/maintenance.json');
+    $json = @file_get_contents(__DIR__ . '/state.json');
 
     if ($json === false) {
         return;
@@ -54,10 +55,10 @@
 
     if (str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')) {
         header('Content-Type: application/json');
-        readfile(__DIR__ . '/maintenance-body.json');
+        readfile(__DIR__ . '/page.json');
     } else {
         header('Content-Type: text/html; charset=utf-8');
-        readfile(__DIR__ . '/maintenance.html');
+        readfile(__DIR__ . '/page.html');
     }
 
     exit();

@@ -190,7 +190,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
-        $this->assertSame(1_741_944_413, read_json($this->kernel->internalStorage . '/maintenance.json')['enabled_since'] ?? null);
+        $this->assertSame(1_741_944_413, read_json($this->kernel->internalStorage . '/maintenance/state.json')['enabled_since'] ?? null);
     }
 
     #[Test]
@@ -201,7 +201,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     public function a_broken_maintenance_state_lets_requests_through(string $json): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', $json);
+        write_file($this->kernel->internalStorage . '/maintenance/state.json', $json);
 
         $this->http
             ->get('/maintenance-mode/page')
@@ -213,7 +213,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     public function status_reports_disabled_when_the_maintenance_state_is_broken(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', '{"enabled_since":');
+        write_file($this->kernel->internalStorage . '/maintenance/state.json', '{"enabled_since":');
 
         $this->console
             ->call('maintenance:status')
@@ -222,17 +222,29 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function disabling_with_a_broken_maintenance_state_cleans_up_the_leftover_files(): void
+    public function disabling_with_a_broken_maintenance_state_removes_the_maintenance_folder(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', '{"enabled_since":');
+        write_file($this->kernel->internalStorage . '/maintenance/state.json', '{"enabled_since":');
+        write_file($this->kernel->internalStorage . '/maintenance/state.json.tmp', '{"enabled_since":');
 
         $this->console
             ->call('maintenance:disable')
             ->assertSuccess()
             ->assertContains('Maintenance mode was not enabled.');
 
-        $this->assertSame([], glob($this->kernel->internalStorage . '/maintenance*'));
+        $this->assertDirectoryDoesNotExist($this->kernel->internalStorage . '/maintenance');
+    }
+
+    #[Test]
+    public function disabling_removes_the_maintenance_folder(): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        $this->assertFileExists($this->kernel->internalStorage . '/maintenance/check.php');
+
+        $this->console->call('maintenance:disable')->assertSuccess();
+
+        $this->assertDirectoryDoesNotExist($this->kernel->internalStorage . '/maintenance');
     }
 
     #[Test]
@@ -241,7 +253,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     public function excluded_paths_that_are_not_strings_are_skipped(string $excludedPaths, Status $status): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', "{\"enabled_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
+        write_file($this->kernel->internalStorage . '/maintenance/state.json', "{\"enabled_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
 
         $this->http
             ->get('/maintenance-mode/page')
@@ -252,7 +264,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     public function a_malformed_retry_value_is_ignored(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->kernel->internalStorage . '/maintenance.json', '{"enabled_since":1741944413,"retry":"soon"}');
+        write_file($this->kernel->internalStorage . '/maintenance/state.json', '{"enabled_since":1741944413,"retry":"soon"}');
 
         $this->console
             ->call('maintenance:status')

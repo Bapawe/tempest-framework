@@ -5,7 +5,7 @@
 Maintenance mode can now answer requests before `vendor/autoload.php` is loaded, so requests during `composer install` get a 503 instead of a 500. New applications include this check, but existing ones need to add it to `public/index.php`, above the line that requires `vendor/autoload.php`:
 
 ```php
-if (is_file($maintenance = __DIR__ . '/../.tempest/maintenance.php')) {
+if (is_file($maintenance = __DIR__ . '/../.tempest/maintenance/check.php')) {
     require $maintenance;
 }
 ```

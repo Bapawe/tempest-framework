@@ -188,7 +188,7 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     public function a_leftover_stub_without_maintenance_state_lets_requests_through(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        delete_file($this->applicationRoot . '/.tempest/maintenance.json');
+        delete_file($this->applicationRoot . '/.tempest/maintenance/state.json');
 
         $response = $this->request('/anything');
 
@@ -204,7 +204,7 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     public function a_broken_maintenance_state_lets_requests_through(string $json): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->applicationRoot . '/.tempest/maintenance.json', $json);
+        write_file($this->applicationRoot . '/.tempest/maintenance/state.json', $json);
 
         $response = $this->request('/anything');
 
@@ -219,7 +219,7 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     public function excluded_paths_that_are_not_strings_are_skipped(string $excludedPaths, string $path, int $status): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->applicationRoot . '/.tempest/maintenance.json', "{\"enabled_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
+        write_file($this->applicationRoot . '/.tempest/maintenance/state.json', "{\"enabled_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
 
         $this->assertSame($status, $this->request($path)->getStatusCode());
     }

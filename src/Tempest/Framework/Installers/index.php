@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Tempest\Router\HttpApplication;
 
-if (is_file($maintenance = __DIR__ . '/../.tempest/maintenance.php')) {
+if (is_file($maintenance = __DIR__ . '/../.tempest/maintenance/check.php')) {
     require $maintenance;
 }
 
