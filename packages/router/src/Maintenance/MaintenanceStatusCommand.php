@@ -13,6 +13,7 @@ final readonly class MaintenanceStatusCommand
     public function __construct(
         private Console $console,
         private MaintenanceMode $maintenanceMode,
+        private MaintenanceConfig $config,
     ) {}
 
     #[ConsoleCommand(
@@ -36,11 +37,30 @@ final readonly class MaintenanceStatusCommand
                 $this->console->keyValue('Retry after', "{$state->retry} seconds");
             }
 
+            $excludedPaths = $state->excludedPaths === [] ? '<style="dim">none</style>' : implode(', ', $state->excludedPaths);
+
+            $this->console->keyValue('Excluded paths', $excludedPaths);
+
+            if (! $this->hasSamePaths($state->excludedPaths, $this->config->excludedPaths)) {
+                $this->console->warning('The configured excluded paths differ from the saved ones. Run `maintenance:enable` again to apply them.');
+            }
+
             return ExitCode::ERROR;
         }
 
         $this->console->keyValue('Status', '<style="fg-green bold">DISABLED</style>');
 
         return ExitCode::SUCCESS;
+    }
+
+    /**
+     * Compares the paths as sets of exact strings, ignoring order and duplicates, the same way they are matched.
+     *
+     * @param string[] $saved
+     * @param string[] $configured
+     */
+    private function hasSamePaths(array $saved, array $configured): bool
+    {
+        return array_diff($saved, $configured) === [] && array_diff($configured, $saved) === [];
     }
 }

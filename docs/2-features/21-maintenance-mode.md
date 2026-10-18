@@ -55,7 +55,7 @@ The `{txt}maintenance:status` command tells you whether maintenance mode is enab
 Status <dim>....................................................</dim> DISABLED
 ```
 
-When maintenance mode is enabled, it prints since when, followed by the retry value if one was given:
+When maintenance mode is enabled, it prints since when, the retry value if one was given, and the [excluded paths](#excluded-paths) saved when maintenance mode was enabled:
 
 ```console
 <dim>./tempest maintenance:status</dim>
@@ -64,6 +64,7 @@ When maintenance mode is enabled, it prints since when, followed by the retry va
 Status <dim>.....................................................</dim> ENABLED
 Enabled since <dim>............................</dim> 2025-03-14 09:26:53 (UTC)
 Retry after <dim>............................................</dim> 600 seconds
+Excluded paths <dim>................................</dim> /health, /webhooks/*
 ```
 
 The command exits with `0` (`SUCCESS`) when maintenance mode is disabled and `1` (`ERROR`) when it is enabled. The non-zero exit code means "maintenance mode is enabled", not that the command failed, which is why the status shows in yellow instead of being reported as an error. This allows scripts to branch on the state without parsing the output:
@@ -143,7 +144,7 @@ The `{txt}{:hl-property:Retry-After:}` header is added to the response your rend
 
 ## Applying changes
 
-`{txt}maintenance:enable` saves the [excluded paths](#excluded-paths) and renders the [maintenance page](#customizing-the-maintenance-page) at the moment it runs. Changes you make to either while maintenance mode is enabled take effect the next time you run `{txt}maintenance:enable`.
+`{txt}maintenance:enable` saves the [excluded paths](#excluded-paths) and renders the [maintenance page](#customizing-the-maintenance-page) at the moment it runs. Changes you make to either while maintenance mode is enabled take effect the next time you run `{txt}maintenance:enable`. `{txt}maintenance:status` warns when the configured excluded paths differ from the saved ones, so you can tell whether a config change has been applied.
 
 ## Deploy scripts
 

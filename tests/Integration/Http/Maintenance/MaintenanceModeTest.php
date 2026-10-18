@@ -10,6 +10,7 @@ use Tempest\Core\Environment;
 use Tempest\DateTime\Duration;
 use Tempest\Http\ContentType;
 use Tempest\Http\Status;
+use Tempest\Router\Maintenance\MaintenanceConfig;
 use Tempest\Router\RouteConfig;
 use Tempest\Support\Priority;
 use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
@@ -381,6 +382,95 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
             ->assertContains('ENABLED')
             ->assertContains('Enabled since')
             ->assertDoesNotContain('Retry after');
+    }
+
+    #[Test]
+    public function status_reports_the_saved_excluded_paths(): void
+    {
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->console
+            ->call('maintenance:status')
+            ->assertError()
+            ->assertContains('Excluded paths')
+            ->assertContains('/health, /webhooks/*');
+    }
+
+    #[Test]
+    public function status_reports_none_when_no_excluded_paths_are_saved(): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->console
+            ->call('maintenance:status')
+            ->assertError()
+            ->assertContains('Excluded paths')
+            ->assertContains('none');
+    }
+
+    #[Test]
+    public function status_leaves_out_the_excluded_paths_while_disabled(): void
+    {
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
+
+        $this->console
+            ->call('maintenance:status')
+            ->assertSuccess()
+            ->assertDoesNotContain('Excluded paths')
+            ->assertDoesNotContain('The configured excluded paths differ from the saved ones. Run `maintenance:enable` again to apply them.');
+    }
+
+    #[Test]
+    public function status_warns_when_the_configured_excluded_paths_changed_after_enabling(): void
+    {
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+
+        $this->console
+            ->call('maintenance:status')
+            ->assertError()
+            ->assertContains('Excluded paths')
+            ->assertContains('/health')
+            ->assertDoesNotContain('/webhooks/*')
+            ->assertContains('The configured excluded paths differ from the saved ones. Run `maintenance:enable` again to apply them.');
+    }
+
+    #[Test]
+    public function status_does_not_warn_when_the_configured_excluded_paths_are_reordered(): void
+    {
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/webhooks/*', '/health']));
+
+        $this->console
+            ->call('maintenance:status')
+            ->assertError()
+            ->assertDoesNotContain('The configured excluded paths differ from the saved ones. Run `maintenance:enable` again to apply them.');
+    }
+
+    #[Test]
+    public function enabling_again_after_a_config_change_clears_the_excluded_paths_warning(): void
+    {
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->console
+            ->call('maintenance:status')
+            ->assertError()
+            ->assertContains('/health, /webhooks/*')
+            ->assertDoesNotContain('The configured excluded paths differ from the saved ones. Run `maintenance:enable` again to apply them.');
     }
 
     #[Test]
