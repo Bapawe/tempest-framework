@@ -28,10 +28,10 @@ final readonly class MaintenanceStatusCommand
             $timezone = $state->enabledSince->getTimezone()->value;
 
             $this->console->info("Maintenance mode has been enabled since {$since} ({$timezone}).");
-            $this->console->writeln(match ($state->retry) {
-                null => 'No retry value is set, so 503 responses carry no `Retry-After` header.',
-                default => "Clients are told to retry after {$state->retry} seconds.",
-            });
+
+            if ($state->retry !== null) {
+                $this->console->writeln("Clients are told to retry after {$state->retry} seconds.");
+            }
 
             return ExitCode::ERROR;
         }

@@ -54,7 +54,7 @@ The `{txt}maintenance:status` command tells you whether maintenance mode is enab
 Maintenance mode is disabled.
 ```
 
-When maintenance mode is enabled, it prints since when, and the retry value. Without a retry value, the second line says that 503 responses carry no `Retry-After` header.
+When maintenance mode is enabled, it prints since when, followed by the retry value if one was given.
 
 ```console
 <dim>./tempest maintenance:status</dim>

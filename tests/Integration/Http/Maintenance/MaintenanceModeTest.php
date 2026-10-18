@@ -295,7 +295,8 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('No retry value is set');
+            ->assertContains('Maintenance mode has been enabled since')
+            ->assertDoesNotContain('retry');
     }
 
     #[Test]
@@ -361,15 +362,15 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function status_reports_no_retry_value_when_none_is_set(): void
+    public function status_leaves_out_the_retry_value_when_none_is_set(): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
 
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('No retry value is set')
-            ->assertDoesNotContain('retry after');
+            ->assertContains('Maintenance mode has been enabled since')
+            ->assertDoesNotContain('retry');
     }
 
     #[Test]
@@ -433,7 +434,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
 
         $this->console
             ->call('maintenance:status')
-            ->assertContains('No retry value is set');
+            ->assertDoesNotContain('retry');
     }
 
     #[Test]
