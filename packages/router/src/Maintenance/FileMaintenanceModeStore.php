@@ -15,13 +15,19 @@ final readonly class FileMaintenanceModeStore implements MaintenanceModeStore
 {
     private const string FILENAME = 'maintenance.json';
 
+    private const string STUB_FILENAME = 'maintenance.php';
+
+    private const string HTML_FILENAME = 'maintenance.html';
+
+    private const string JSON_BODY_FILENAME = 'maintenance-body.json';
+
     public function __construct(
         private Kernel $kernel,
     ) {}
 
     public function current(): ?MaintenanceModeState
     {
-        $path = $this->path();
+        $path = $this->path(self::FILENAME);
 
         if (! Filesystem\is_file($path)) {
             return null;
@@ -32,31 +38,50 @@ final readonly class FileMaintenanceModeStore implements MaintenanceModeStore
         return new MaintenanceModeState(
             downSince: DateTime::fromTimestamp($data['down_since']),
             retry: $data['retry'] ?? null,
+            excludedPaths: $data['excluded_paths'] ?? [],
         );
     }
 
-    public function enable(MaintenanceModeState $state): void
+    /**
+     * The files are written so that the early check never acts on a half-written state: first the bodies, then the
+     * state through a rename, then the stub that reads them.
+     */
+    public function enable(MaintenanceModeState $state, MaintenancePage $page): void
     {
-        Filesystem\write_json($this->path(), [
+        Filesystem\write_file($this->path(self::HTML_FILENAME), $page->html);
+        Filesystem\write_file($this->path(self::JSON_BODY_FILENAME), $page->json);
+
+        $temporary = $this->path(self::FILENAME . '.tmp');
+
+        Filesystem\write_json($temporary, [
             'down_since' => $state->downSince->getTimestamp()->getSeconds(),
             'retry' => $state->retry,
+            'excluded_paths' => $state->excludedPaths,
         ]);
+
+        Filesystem\move($temporary, $this->path(self::FILENAME), overwrite: true);
+        Filesystem\copy_file(__DIR__ . '/maintenance.stub.php', $this->path(self::STUB_FILENAME), overwrite: true);
     }
 
+    /**
+     * The state goes first, so a stub or bodies left behind by a failure here let requests through.
+     */
     public function disable(): void
     {
-        $path = $this->path();
+        foreach ([self::FILENAME, self::STUB_FILENAME, self::HTML_FILENAME, self::JSON_BODY_FILENAME] as $filename) {
+            if (! Filesystem\is_file($this->path($filename))) {
+                continue;
+            }
 
-        if (Filesystem\is_file($path)) {
-            Filesystem\delete_file($path);
+            Filesystem\delete_file($this->path($filename));
         }
     }
 
     /**
      * The internal storage directory is resolved on every call, since it may change after the store was created.
      */
-    private function path(): string
+    private function path(string $filename): string
     {
-        return $this->kernel->internalStorage . '/' . self::FILENAME;
+        return $this->kernel->internalStorage . '/' . $filename;
     }
 }

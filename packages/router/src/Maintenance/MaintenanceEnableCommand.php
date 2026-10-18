@@ -11,6 +11,7 @@ use Tempest\Console\ConsoleCommand;
 use Tempest\Console\ExitCode;
 use Tempest\Console\Middleware\CautionMiddleware;
 use Tempest\Console\Middleware\ForceMiddleware;
+use Throwable;
 
 final readonly class MaintenanceEnableCommand
 {
@@ -18,6 +19,8 @@ final readonly class MaintenanceEnableCommand
         private Console $console,
         private MaintenanceModeStore $store,
         private Clock $clock,
+        private MaintenancePagePrerenderer $prerenderer,
+        private MaintenanceConfig $config,
     ) {}
 
     #[ConsoleCommand(
@@ -36,17 +39,33 @@ final readonly class MaintenanceEnableCommand
         }
 
         $current = $this->store->current();
+        $page = $this->renderPage($retry);
 
         if ($current instanceof MaintenanceModeState) {
-            $this->store->enable(new MaintenanceModeState(downSince: $current->downSince, retry: $retry));
+            $this->store->enable(new MaintenanceModeState(downSince: $current->downSince, retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
             $this->console->info('The application was already down.');
 
             return ExitCode::SUCCESS;
         }
 
-        $this->store->enable(new MaintenanceModeState(downSince: $this->clock->now(), retry: $retry));
+        $this->store->enable(new MaintenanceModeState(downSince: $this->clock->now(), retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
         $this->console->success('The application is now down.');
 
         return ExitCode::SUCCESS;
+    }
+
+    /**
+     * Renders the page served while the application can't boot, falling back to the built-in page so that a broken
+     * error page never keeps the application from going down.
+     */
+    private function renderPage(?int $retry): MaintenancePage
+    {
+        try {
+            return $this->prerenderer->render(new MaintenanceModeWasActive(retry: $retry));
+        } catch (Throwable $throwable) {
+            $this->console->warning("The maintenance page could not be rendered, so the built-in page is served while the application can't boot: {$throwable->getMessage()}");
+
+            return MaintenancePage::builtIn();
+        }
     }
 }

@@ -15,25 +15,21 @@ use Tempest\Support\Priority;
  *
  * It runs after `HandleRouteExceptionMiddleware`, so its exception is rendered, and before `MatchRouteMiddleware`,
  * so unknown URLs get a 503 instead of a 404. The state is read on every request, so that running workers
- * pick up `maintenance:enable` and `maintenance:disable` without a restart.
+ * pick up `maintenance:enable` and `maintenance:disable` without a restart. Excluded paths come from the state, as saved
+ * by `maintenance:enable`, so this check and the early check in `maintenance.stub.php` always agree.
  */
 #[Priority(Priority::FRAMEWORK - 30)]
 final readonly class CheckMaintenanceModeMiddleware implements HttpMiddleware
 {
     public function __construct(
         private MaintenanceModeStore $store,
-        private MaintenanceConfig $config,
     ) {}
 
     public function __invoke(Request $request, HttpMiddlewareCallable $next): Response
     {
-        if ($this->isExcluded($request->path)) {
-            return $next($request);
-        }
-
         $state = $this->store->current();
 
-        if ($state instanceof MaintenanceModeState) {
+        if ($state instanceof MaintenanceModeState && ! $this->isExcluded($request->path, $state->excludedPaths)) {
             throw new MaintenanceModeWasActive(retry: $state->retry);
         }
 
@@ -42,11 +38,14 @@ final readonly class CheckMaintenanceModeMiddleware implements HttpMiddleware
 
     /**
      * An exact pattern matches only the identical path. A pattern ending in `*` matches any path that
-     * starts with what comes before the `*`, followed by at least one more character.
+     * starts with what comes before the `*`, followed by at least one more character. The early check in
+     * `maintenance.stub.php` applies the same rules.
+     *
+     * @param string[] $excludedPaths
      */
-    private function isExcluded(string $path): bool
+    private function isExcluded(string $path, array $excludedPaths): bool
     {
-        foreach ($this->config->excludedPaths as $pattern) {
+        foreach ($excludedPaths as $pattern) {
             if (! str_ends_with($pattern, '*')) {
                 if ($path === $pattern) {
                     return true;

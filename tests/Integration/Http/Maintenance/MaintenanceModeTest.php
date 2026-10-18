@@ -228,7 +228,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('The application has been in maintenance mode since 2025-03-14 09:26:53 (UTC)');
+            ->assertContains('The application has been down since 2025-03-14 09:26:53 (UTC)');
     }
 
     #[Test]
@@ -332,7 +332,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('The application has been in maintenance mode since 2025-03-14 09:26:53 (UTC)')
+            ->assertContains('The application has been down since 2025-03-14 09:26:53 (UTC)')
             ->assertContains('Clients are told to retry after 600 seconds');
     }
 
@@ -350,7 +350,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('The application has been in maintenance mode since 2025-03-14 09:26:53 (UTC)');
+            ->assertContains('The application has been down since 2025-03-14 09:26:53 (UTC)');
     }
 
     #[Test]
@@ -382,7 +382,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('The application has been in maintenance mode since');
+            ->assertContains('The application has been down since');
     }
 
     #[Test]

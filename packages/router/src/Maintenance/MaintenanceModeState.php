@@ -17,5 +17,13 @@ final readonly class MaintenanceModeState
 
         /** How many seconds clients are told to wait before retrying, if a value was given. */
         public ?int $retry = null,
+
+        /**
+         * The excluded paths configured when the application went down. Both maintenance checks match against
+         * these, so changes to the config take effect the next time `maintenance:enable` runs.
+         *
+         * @var string[]
+         */
+        public array $excludedPaths = [],
     ) {}
 }

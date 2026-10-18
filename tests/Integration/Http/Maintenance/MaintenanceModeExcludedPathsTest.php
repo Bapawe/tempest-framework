@@ -144,4 +144,39 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
             ->get('/webhooks/stripe')
             ->assertStatus(Status::SERVICE_UNAVAILABLE);
     }
+
+    #[Test]
+    public function excluded_paths_added_while_down_apply_after_enabling_again(): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
+
+        $this->http
+            ->get('/health')
+            ->assertStatus(Status::SERVICE_UNAVAILABLE);
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->http
+            ->get('/health')
+            ->assertOk();
+    }
+
+    #[Test]
+    public function excluded_paths_removed_while_down_stay_reachable_until_enabling_again(): void
+    {
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
+        $this->console->call('maintenance:enable')->assertSuccess();
+        $this->container->config(new MaintenanceConfig(excludedPaths: []));
+
+        $this->http
+            ->get('/health')
+            ->assertOk();
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->http
+            ->get('/health')
+            ->assertStatus(Status::SERVICE_UNAVAILABLE);
+    }
 }

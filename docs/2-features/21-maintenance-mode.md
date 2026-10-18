@@ -59,7 +59,7 @@ When the application is down, it prints since when, and the retry value. Without
 ```console
 <dim>./tempest maintenance:status</dim>
 
-The application has been in maintenance mode since 2025-03-14 09:26:53 (UTC).
+The application has been down since 2025-03-14 09:26:53 (UTC).
 Clients are told to retry after 600 seconds.
 ```
 

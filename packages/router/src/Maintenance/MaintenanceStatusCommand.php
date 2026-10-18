@@ -27,7 +27,7 @@ final readonly class MaintenanceStatusCommand
             $since = $state->downSince->format('yyyy-MM-dd HH:mm:ss');
             $timezone = $state->downSince->getTimezone()->value;
 
-            $this->console->warning("The application has been in maintenance mode since {$since} ({$timezone}).");
+            $this->console->warning("The application has been down since {$since} ({$timezone}).");
             $this->console->writeln(match ($state->retry) {
                 null => 'No retry value is set, so 503 responses carry no `Retry-After` header.',
                 default => "Clients are told to retry after {$state->retry} seconds.",

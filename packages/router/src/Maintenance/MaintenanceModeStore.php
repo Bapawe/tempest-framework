@@ -15,9 +15,10 @@ interface MaintenanceModeStore
     public function current(): ?MaintenanceModeState;
 
     /**
-     * Takes the application down with the given state, replacing any existing one.
+     * Takes the application down with the given state, replacing any existing one. Stores that answer requests
+     * before the application boots serve the given page; others may ignore it.
      */
-    public function enable(MaintenanceModeState $state): void;
+    public function enable(MaintenanceModeState $state, MaintenancePage $page): void;
 
     /**
      * Brings the application back up.
