@@ -16,6 +16,8 @@ use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
 use Tests\Tempest\Integration\Http\Maintenance\Fixtures\MaintenanceModeController;
 use Tests\Tempest\Integration\Http\Maintenance\Fixtures\MaintenancePageRenderer;
 
+use function Tempest\Support\Filesystem\write_file;
+
 /**
  * @internal
  */
@@ -178,6 +180,73 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
         $this->http
             ->get('/maintenance-mode/page')
             ->assertOk();
+    }
+
+    #[Test]
+    #[TestWith(['{"down_since":'])]
+    #[TestWith(['{"retry":600}'])]
+    #[TestWith(['{"down_since":"yesterday"}'])]
+    #[TestWith(['{"down_since":"1741944413"}'])]
+    public function a_broken_maintenance_state_lets_requests_through(string $json): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        write_file($this->kernel->internalStorage . '/maintenance.json', $json);
+
+        $this->http
+            ->get('/maintenance-mode/page')
+            ->assertOk()
+            ->assertSee('Handled normally');
+    }
+
+    #[Test]
+    public function status_reports_up_when_the_maintenance_state_is_broken(): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        write_file($this->kernel->internalStorage . '/maintenance.json', '{"down_since":');
+
+        $this->console
+            ->call('maintenance:status')
+            ->assertSuccess()
+            ->assertContains('The application is up');
+    }
+
+    #[Test]
+    public function disabling_with_a_broken_maintenance_state_cleans_up_the_leftover_files(): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        write_file($this->kernel->internalStorage . '/maintenance.json', '{"down_since":');
+
+        $this->console
+            ->call('maintenance:disable')
+            ->assertSuccess()
+            ->assertContains('The application is already up');
+
+        $this->assertSame([], glob($this->kernel->internalStorage . '/maintenance*'));
+    }
+
+    #[Test]
+    #[TestWith(['"/maintenance-mode/page"', Status::SERVICE_UNAVAILABLE])]
+    #[TestWith(['[42, ["/maintenance-mode/page"], "/maintenance-mode/page"]', Status::OK])]
+    public function excluded_paths_that_are_not_strings_are_skipped(string $excludedPaths, Status $status): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        write_file($this->kernel->internalStorage . '/maintenance.json', "{\"down_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
+
+        $this->http
+            ->get('/maintenance-mode/page')
+            ->assertStatus($status);
+    }
+
+    #[Test]
+    public function a_malformed_retry_value_is_ignored(): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        write_file($this->kernel->internalStorage . '/maintenance.json', '{"down_since":1741944413,"retry":"soon"}');
+
+        $this->console
+            ->call('maintenance:status')
+            ->assertError()
+            ->assertContains('No retry value is set');
     }
 
     #[Test]

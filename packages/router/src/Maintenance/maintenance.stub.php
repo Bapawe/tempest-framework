@@ -15,15 +15,22 @@
 
     $state = json_decode($json, associative: true);
 
-    if (! is_array($state)) {
+    // The same validation as `FileMaintenanceModeStore::current()`
+    if (! is_array($state) || ! is_int($state['down_since'] ?? null)) {
         return;
     }
+
+    $excludedPaths = is_array($state['excluded_paths'] ?? null) ? $state['excluded_paths'] : [];
 
     $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     $path = is_string($path) ? $path : '/';
 
     // The same matching rules as `CheckMaintenanceModeMiddleware`
-    foreach ($state['excluded_paths'] ?? [] as $pattern) {
+    foreach ($excludedPaths as $pattern) {
+        if (! is_string($pattern)) {
+            continue;
+        }
+
         if (! str_ends_with($pattern, '*')) {
             if ($path === $pattern) {
                 return;

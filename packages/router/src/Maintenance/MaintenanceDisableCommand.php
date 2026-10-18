@@ -21,13 +21,17 @@ final readonly class MaintenanceDisableCommand
     )]
     public function __invoke(): ExitCode
     {
-        if (! $this->store->current() instanceof MaintenanceModeState) {
+        $wasDown = $this->store->current() instanceof MaintenanceModeState;
+
+        // Also clears whatever a broken state left behind
+        $this->store->disable();
+
+        if (! $wasDown) {
             $this->console->info('The application is already up.');
 
             return ExitCode::SUCCESS;
         }
 
-        $this->store->disable();
         $this->console->success('The application is now up.');
 
         return ExitCode::SUCCESS;

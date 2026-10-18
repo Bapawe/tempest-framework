@@ -194,15 +194,31 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    public function a_corrupt_maintenance_state_lets_requests_through(): void
+    #[TestWith(['{"down_since":'])]
+    #[TestWith(['{"retry":600}'])]
+    #[TestWith(['{"down_since":"yesterday"}'])]
+    #[TestWith(['{"down_since":"1741944413"}'])]
+    public function a_broken_maintenance_state_lets_requests_through(string $json): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->applicationRoot . '/.tempest/maintenance.json', '{"down_since":');
+        write_file($this->applicationRoot . '/.tempest/maintenance.json', $json);
 
         $response = $this->request('/anything');
 
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('booted', (string) $response->getBody());
+    }
+
+    #[Test]
+    #[TestWith(['"/health"', '/health', 503])]
+    #[TestWith(['[42, ["/health"], "/health"]', '/health', 200])]
+    #[TestWith(['[42, ["/health"], "/health"]', '/anything', 503])]
+    public function excluded_paths_that_are_not_strings_are_skipped(string $excludedPaths, string $path, int $status): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        write_file($this->applicationRoot . '/.tempest/maintenance.json', "{\"down_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
+
+        $this->assertSame($status, $this->request($path)->getStatusCode());
     }
 
     #[Test]

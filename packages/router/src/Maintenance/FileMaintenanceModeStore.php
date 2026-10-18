@@ -7,6 +7,9 @@ namespace Tempest\Router\Maintenance;
 use Tempest\Core\Kernel;
 use Tempest\DateTime\DateTime;
 use Tempest\Support\Filesystem;
+use Tempest\Support\Filesystem\Exceptions\FilesystemException;
+use Tempest\Support\Json;
+use Tempest\Support\Json\Exception\JsonException;
 
 /**
  * Keeps the maintenance mode state in a file in the framework's internal storage directory. It only affects the server it runs on.
@@ -25,6 +28,10 @@ final readonly class FileMaintenanceModeStore implements MaintenanceModeStore
         private Kernel $kernel,
     ) {}
 
+    /**
+     * A state that can't be read or parsed counts as up, so a broken file never keeps the application down. The early
+     * check in `maintenance.stub.php` validates the state the same way.
+     */
     public function current(): ?MaintenanceModeState
     {
         $path = $this->path(self::FILENAME);
@@ -33,12 +40,20 @@ final readonly class FileMaintenanceModeStore implements MaintenanceModeStore
             return null;
         }
 
-        $data = Filesystem\read_json($path);
+        try {
+            $data = Json\decode(Filesystem\read_file($path));
+        } catch (FilesystemException|JsonException) {
+            return null;
+        }
+
+        if (! is_array($data) || ! is_int($data['down_since'] ?? null)) {
+            return null;
+        }
 
         return new MaintenanceModeState(
             downSince: DateTime::fromTimestamp($data['down_since']),
-            retry: $data['retry'] ?? null,
-            excludedPaths: $data['excluded_paths'] ?? [],
+            retry: is_int($data['retry'] ?? null) ? $data['retry'] : null,
+            excludedPaths: is_array($data['excluded_paths'] ?? null) ? array_values(array_filter($data['excluded_paths'], is_string(...))) : [],
         );
     }
 
