@@ -13,6 +13,7 @@ use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Http\Status;
 use Tempest\Router\Maintenance\MaintenanceModeWasActive;
+use Tempest\Router\Maintenance\MaintenancePage;
 use Tempest\Router\ResponseSender;
 use Tempest\Router\RouteConfig;
 use Tempest\Support\Arr;
@@ -51,6 +52,18 @@ final readonly class HttpExceptionHandler implements ExceptionHandler
             if ($renderer->canRender($throwable, $request)) {
                 return $this->applyHeaders($renderer->render($throwable), $throwable);
             }
+        }
+
+        // Maintenance mode always answers with a 503, so that clients learn when to retry instead of recording a failure
+        if ($throwable instanceof MaintenanceModeWasActive) {
+            return $this->applyHeaders(
+                new GenericResponse(
+                    status: Status::SERVICE_UNAVAILABLE,
+                    body: MaintenancePage::builtIn()->html,
+                    headers: ['Content-Type' => 'text/html; charset=utf-8'],
+                ),
+                $throwable,
+            );
         }
 
         return new GenericResponse(status: Status::NOT_ACCEPTABLE);

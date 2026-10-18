@@ -60,6 +60,32 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
+    public function requests_that_accept_neither_html_nor_json_still_get_a_503(): void
+    {
+        $this->console->call('maintenance:enable --retry=600')->assertSuccess();
+
+        $this->http
+            ->as(ContentType::TXT)
+            ->get('/maintenance-mode/page')
+            ->assertStatus(Status::SERVICE_UNAVAILABLE)
+            ->assertHeaderContains('Retry-After', '600')
+            ->assertHeaderContains('Content-Type', 'text/html; charset=utf-8')
+            ->assertSee('503 Service Unavailable');
+    }
+
+    #[Test]
+    public function requests_that_accept_neither_html_nor_json_get_no_retry_after_header_without_a_retry(): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $this->http
+            ->as(ContentType::TXT)
+            ->get('/maintenance-mode/page')
+            ->assertStatus(Status::SERVICE_UNAVAILABLE)
+            ->assertDoesNotHaveHeader('Retry-After');
+    }
+
+    #[Test]
     public function html_and_json_503s_carry_a_retry_after_header_when_a_retry_is_given(): void
     {
         $this->console->call('maintenance:enable --retry=600')->assertSuccess();
