@@ -40,7 +40,7 @@ In the production and staging environments, `{txt}maintenance:enable` asks for c
 Don't use `--no-interaction` instead of `--force`. Without anyone to answer, the confirmation falls back to "no", and maintenance mode stays disabled.
 :::
 
-The `{txt}maintenance:status` command shows whether maintenance mode is enabled, along with its settings. It exits with `0` when maintenance mode is disabled and `1` when it is enabled, so scripts can branch on it.
+The `{txt}maintenance:status` command shows whether maintenance mode is enabled, along with its settings. It exits with `0` when maintenance mode is disabled and `1` when it is enabled, so scripts can branch on it. An exit code of `1` means maintenance mode is enabled, not that the command failed.
 
 ## Excluded paths
 
@@ -57,7 +57,11 @@ return new MaintenanceConfig(
 );
 ```
 
-An excluded path is either an exact path, or a prefix ending in `*` that matches anything below it. Patterns are matched against the request path, without the query string.
+An excluded path is either an exact path, or a prefix ending in `*` that matches anything below it. Patterns are matched against the request path, without the query string:
+
+- `/health/*` doesn't match `/health` itself, so list both if both should stay reachable.
+- A trailing slash matters: `/health` doesn't match `/health/`.
+- Patterns are plain text, not regular expressions.
 
 Requests to excluded paths are handled normally, which means they run against the code and database that may be in the middle of being changed.
 
