@@ -7,12 +7,6 @@
         "php": "^8.5",
         "tempest/http": "3.x-dev",
         "tempest/view": "3.x-dev",
-        "tempest/clock": "3.x-dev",
-        "tempest/console": "3.x-dev",
-        "tempest/container": "3.x-dev",
-        "tempest/core": "3.x-dev",
-        "tempest/datetime": "3.x-dev",
-        "tempest/support": "3.x-dev",
         "tempest/highlight": "^2.11.4",
         "symfony/var-exporter": "^7.1|^8.0"
     },
