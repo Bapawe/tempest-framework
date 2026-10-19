@@ -79,6 +79,24 @@ final class MaintenanceModeConfirmationTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
+    #[TestWith([Environment::PRODUCTION])]
+    #[TestWith([Environment::STAGING])]
+    public function enabling_without_interaction_cancels(Environment $environment): void
+    {
+        $this->container->singleton(Environment::class, $environment);
+
+        $this->console
+            ->withoutPrompting()
+            ->call('maintenance:enable')
+            ->assertCancelled();
+
+        $this->http
+            ->get('/maintenance-mode/page')
+            ->assertOk()
+            ->assertSee('Handled normally');
+    }
+
+    #[Test]
     public function enabling_locally_does_not_ask(): void
     {
         $this->container->singleton(Environment::class, Environment::LOCAL);
