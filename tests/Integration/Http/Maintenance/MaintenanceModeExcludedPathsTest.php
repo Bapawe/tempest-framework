@@ -22,9 +22,8 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
         parent::setUp();
 
         $this->http->registerRoute([MaintenanceModeExcludedPathsController::class, 'health']);
-        $this->http->registerRoute([MaintenanceModeExcludedPathsController::class, 'webhooks']);
-        $this->http->registerRoute([MaintenanceModeExcludedPathsController::class, 'stripe']);
-        $this->http->registerRoute([MaintenanceModeExcludedPathsController::class, 'stripeEvents']);
+        $this->http->registerRoute([MaintenanceModeExcludedPathsController::class, 'live']);
+        $this->http->registerRoute([MaintenanceModeExcludedPathsController::class, 'databaseReady']);
     }
 
     #[Test]
@@ -68,61 +67,61 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
     #[Test]
     public function a_wildcard_excluded_path_matches_paths_one_level_below_the_prefix(): void
     {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health/*']));
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
         $this->http
-            ->get('/webhooks/stripe')
+            ->get('/health/live')
             ->assertOk()
-            ->assertSee('Stripe webhook');
+            ->assertSee('Alive');
     }
 
     #[Test]
     public function a_wildcard_excluded_path_matches_deeper_paths(): void
     {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health/*']));
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
         $this->http
-            ->get('/webhooks/stripe/events')
+            ->get('/health/ready/database')
             ->assertOk()
-            ->assertSee('Stripe events webhook');
+            ->assertSee('Database ready');
     }
 
     #[Test]
     public function a_wildcard_excluded_path_does_not_match_the_bare_prefix(): void
     {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health/*']));
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
         $this->http
-            ->get('/webhooks')
+            ->get('/health')
             ->assertStatus(Status::SERVICE_UNAVAILABLE);
 
         $this->http
-            ->get('/webhooks/')
+            ->get('/health/')
             ->assertStatus(Status::SERVICE_UNAVAILABLE);
     }
 
     #[Test]
     public function an_unknown_route_under_an_excluded_prefix_returns_a_404_while_enabled(): void
     {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health/*']));
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
         $this->http
-            ->get('/webhooks/does-not-exist')
+            ->get('/health/does-not-exist')
             ->assertNotFound();
     }
 
     #[Test]
     public function paths_that_are_not_excluded_still_get_a_503_while_enabled(): void
     {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/health/*']));
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
@@ -141,7 +140,7 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
             ->assertStatus(Status::SERVICE_UNAVAILABLE);
 
         $this->http
-            ->get('/webhooks/stripe')
+            ->get('/health/live')
             ->assertStatus(Status::SERVICE_UNAVAILABLE);
     }
 

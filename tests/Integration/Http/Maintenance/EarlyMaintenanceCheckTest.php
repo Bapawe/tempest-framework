@@ -146,8 +146,8 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     #[Test]
     #[TestWith(['/health', '/health'])]
     #[TestWith(['/health', '/health?probe=1'])]
-    #[TestWith(['/webhooks/*', '/webhooks/stripe'])]
-    #[TestWith(['/webhooks/*', '/webhooks/stripe/events'])]
+    #[TestWith(['/health/*', '/health/live'])]
+    #[TestWith(['/health/*', '/health/ready/database'])]
     public function excluded_paths_reach_the_application_while_enabled(string $pattern, string $path): void
     {
         $this->container->config(new MaintenanceConfig(excludedPaths: [$pattern]));
@@ -161,8 +161,8 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
 
     #[Test]
     #[TestWith(['/health', '/health/'])]
-    #[TestWith(['/webhooks/*', '/webhooks'])]
-    #[TestWith(['/webhooks/*', '/webhooks/'])]
+    #[TestWith(['/health/*', '/health'])]
+    #[TestWith(['/health/*', '/health/'])]
     public function paths_that_do_not_match_an_excluded_path_get_a_503(string $pattern, string $path): void
     {
         $this->container->config(new MaintenanceConfig(excludedPaths: [$pattern]));

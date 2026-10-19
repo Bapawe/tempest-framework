@@ -387,7 +387,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     #[Test]
     public function status_reports_the_saved_excluded_paths(): void
     {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/health/*']));
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
@@ -395,7 +395,7 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
             ->call('maintenance:status')
             ->assertError()
             ->assertContains('Excluded paths')
-            ->assertContains('/health, /webhooks/*');
+            ->assertContains('/health, /health/*');
     }
 
     #[Test]
@@ -429,25 +429,25 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/health/*']));
 
         $this->console
             ->call('maintenance:status')
             ->assertError()
             ->assertContains('Excluded paths')
             ->assertContains('/health')
-            ->assertDoesNotContain('/webhooks/*')
+            ->assertDoesNotContain('/health/*')
             ->assertContains('The configured excluded paths differ from the saved ones. Run `maintenance:enable` again to apply them.');
     }
 
     #[Test]
     public function status_does_not_warn_when_the_configured_excluded_paths_are_reordered(): void
     {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/health/*']));
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/webhooks/*', '/health']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health/*', '/health']));
 
         $this->console
             ->call('maintenance:status')
@@ -462,14 +462,14 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/webhooks/*']));
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/health/*']));
 
         $this->console->call('maintenance:enable')->assertSuccess();
 
         $this->console
             ->call('maintenance:status')
             ->assertError()
-            ->assertContains('/health, /webhooks/*')
+            ->assertContains('/health, /health/*')
             ->assertDoesNotContain('The configured excluded paths differ from the saved ones. Run `maintenance:enable` again to apply them.');
     }
 

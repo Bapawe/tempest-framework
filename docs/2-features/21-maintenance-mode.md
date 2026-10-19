@@ -64,7 +64,7 @@ When maintenance mode is enabled, it prints since when, the retry value if one w
 Status <dim>.....................................................</dim> ENABLED
 Enabled since <dim>............................</dim> 2025-03-14 09:26:53 (UTC)
 Retry after <dim>............................................</dim> 600 seconds
-Excluded paths <dim>................................</dim> /health, /webhooks/*
+Excluded paths <dim>..................................</dim> /health, /health/*
 ```
 
 The command exits with `0` (`SUCCESS`) when maintenance mode is disabled and `1` (`ERROR`) when it is enabled. The non-zero exit code means "maintenance mode is enabled", not that the command failed, which is why the status shows in yellow instead of being reported as an error. This allows scripts to branch on the state without parsing the output:
@@ -79,7 +79,7 @@ The command exits with `0` (`SUCCESS`) when maintenance mode is disabled and `1`
 
 ## Excluded paths
 
-Some endpoints must keep working while maintenance mode is enabled, such as health checks or payment webhooks. You may list these as excluded paths by creating a `maintenance.config.php` file. Requests to an excluded path are handled normally while maintenance mode is enabled. No paths are excluded by default.
+Some endpoints must keep working while maintenance mode is enabled, such as the health checks your load balancer or orchestrator relies on to keep the server in rotation. You may list these as excluded paths by creating a `maintenance.config.php` file. Requests to an excluded path are handled normally while maintenance mode is enabled. No paths are excluded by default.
 
 ```php app/maintenance.config.php
 use Tempest\Router\Maintenance\MaintenanceConfig;
@@ -87,7 +87,7 @@ use Tempest\Router\Maintenance\MaintenanceConfig;
 return new MaintenanceConfig(
     excludedPaths: [
         '/health',
-        '/webhooks/*',
+        '/health/*',
     ],
 );
 ```
@@ -96,11 +96,15 @@ An excluded path is either an exact path or a prefix followed by a trailing `*`.
 
 - Patterns are compared against the request path only, so the query string is ignored: `/health?probe=1` matches `/health`.
 - An exact path matches only the identical path, including a trailing slash: `/health` doesn't match `/health/`.
-- A pattern ending in `*` matches any path that starts with the text before the `*`, followed by at least one more character. For instance, `/webhooks/*` matches `/webhooks/stripe` and `/webhooks/stripe/events`, but not `/webhooks/` or `/webhooks` themselves. If you need those too, list them as separate exact paths.
+- A pattern ending in `*` matches any path that starts with the text before the `*`, followed by at least one more character. For instance, `/health/*` matches `/health/live` and `/health/ready/database`, but not `/health/` or `/health` themselves. If you need those too, list them as separate exact paths.
 - The text before the `*` is compared as plain text, not as path segments, so `/api*` matches `/api2` and `/api/users`. End the prefix with a `/`, as in `/api/*`, to only match paths below `/api/`.
 - Regular expressions and wildcards in the middle of a pattern are not supported.
 
 Since requests to excluded paths are handled normally, a URL below an excluded prefix that doesn't match any route still returns a 404.
+
+:::warning
+Only exclude endpoints that are safe to run while you deploy or migrate, since an excluded request runs against the code and database you're changing. Incoming webhooks are usually better left out of the list: most providers retry a delivery that gets a 503, so the event is handled once maintenance mode is disabled. Check the provider's retry policy before excluding one.
+:::
 
 The excluded paths are saved when maintenance mode is enabled, so changing them while it is enabled requires [running `{txt}maintenance:enable` again](#applying-changes).
 

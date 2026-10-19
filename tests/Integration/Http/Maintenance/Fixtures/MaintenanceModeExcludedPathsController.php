@@ -14,21 +14,15 @@ final readonly class MaintenanceModeExcludedPathsController
         return 'Healthy';
     }
 
-    #[Get('/webhooks')]
-    public function webhooks(): string
+    #[Get('/health/live')]
+    public function live(): string
     {
-        return 'Webhooks index';
+        return 'Alive';
     }
 
-    #[Get('/webhooks/stripe')]
-    public function stripe(): string
+    #[Get('/health/ready/database')]
+    public function databaseReady(): string
     {
-        return 'Stripe webhook';
-    }
-
-    #[Get('/webhooks/stripe/events')]
-    public function stripeEvents(): string
-    {
-        return 'Stripe events webhook';
+        return 'Database ready';
     }
 }
