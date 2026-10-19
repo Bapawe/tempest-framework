@@ -12,7 +12,7 @@ use Tempest\Http\HttpRequestFailed;
 use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Http\Status;
-use Tempest\Router\Maintenance\MaintenanceModeWasActive;
+use Tempest\Router\Maintenance\MaintenanceModeWasEnabled;
 use Tempest\Router\Maintenance\MaintenancePage;
 use Tempest\Router\ResponseSender;
 use Tempest\Router\RouteConfig;
@@ -55,7 +55,7 @@ final readonly class HttpExceptionHandler implements ExceptionHandler
         }
 
         // Maintenance mode always answers with a 503, so that clients learn when to retry instead of recording a failure
-        if ($throwable instanceof MaintenanceModeWasActive) {
+        if ($throwable instanceof MaintenanceModeWasEnabled) {
             return $this->applyHeaders(
                 new GenericResponse(
                     status: Status::SERVICE_UNAVAILABLE,
@@ -76,7 +76,7 @@ final readonly class HttpExceptionHandler implements ExceptionHandler
     {
         $headers = match (true) {
             $throwable instanceof HttpRequestFailed => $throwable->headers,
-            $throwable instanceof MaintenanceModeWasActive && $throwable->retry !== null => ['Retry-After' => (string) $throwable->retry],
+            $throwable instanceof MaintenanceModeWasEnabled && $throwable->retry !== null => ['Retry-After' => (string) $throwable->retry],
             default => [],
         };
 

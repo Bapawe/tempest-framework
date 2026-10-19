@@ -8,14 +8,14 @@ use RuntimeException;
 use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Router\Exceptions\ExceptionRenderer;
-use Tempest\Router\Maintenance\MaintenanceModeWasActive;
+use Tempest\Router\Maintenance\MaintenanceModeWasEnabled;
 use Throwable;
 
 final readonly class BrokenMaintenancePageRenderer implements ExceptionRenderer
 {
     public function canRender(Throwable $throwable, Request $request): bool
     {
-        return $throwable instanceof MaintenanceModeWasActive;
+        return $throwable instanceof MaintenanceModeWasEnabled;
     }
 
     public function render(Throwable $throwable): Response

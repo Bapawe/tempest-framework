@@ -61,7 +61,7 @@ final readonly class MaintenanceEnableCommand
     private function renderPage(?int $retry): MaintenancePage
     {
         try {
-            return $this->prerenderer->render(new MaintenanceModeWasActive(retry: $retry));
+            return $this->prerenderer->render(new MaintenanceModeWasEnabled(retry: $retry));
         } catch (Throwable $throwable) {
             $this->console->warning("The maintenance page could not be rendered, so the built-in page is served while the application can't boot: {$throwable->getMessage()}");
 

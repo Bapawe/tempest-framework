@@ -26,7 +26,7 @@ final readonly class MaintenancePagePrerenderer
         private Container $container,
     ) {}
 
-    public function render(MaintenanceModeWasActive $exception): MaintenancePage
+    public function render(MaintenanceModeWasEnabled $exception): MaintenancePage
     {
         return new MaintenancePage(
             html: $this->renderBody($exception, ContentType::HTML),
@@ -34,7 +34,7 @@ final readonly class MaintenancePagePrerenderer
         );
     }
 
-    private function renderBody(MaintenanceModeWasActive $exception, ContentType $accept): string
+    private function renderBody(MaintenanceModeWasEnabled $exception, ContentType $accept): string
     {
         $request = new GenericRequest(method: Method::GET, uri: '/', headers: ['Accept' => $accept->value]);
 

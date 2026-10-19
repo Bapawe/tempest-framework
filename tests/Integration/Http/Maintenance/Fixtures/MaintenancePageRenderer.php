@@ -10,14 +10,14 @@ use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Http\Status;
 use Tempest\Router\Exceptions\ExceptionRenderer;
-use Tempest\Router\Maintenance\MaintenanceModeWasActive;
+use Tempest\Router\Maintenance\MaintenanceModeWasEnabled;
 use Throwable;
 
 final readonly class MaintenancePageRenderer implements ExceptionRenderer
 {
     public function canRender(Throwable $throwable, Request $request): bool
     {
-        return $throwable instanceof MaintenanceModeWasActive && $request->accepts(ContentType::HTML);
+        return $throwable instanceof MaintenanceModeWasEnabled && $request->accepts(ContentType::HTML);
     }
 
     public function render(Throwable $throwable): Response

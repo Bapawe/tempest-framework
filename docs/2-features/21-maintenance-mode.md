@@ -63,7 +63,7 @@ Requests to excluded paths are handled normally, which means they run against th
 
 ## Customizing the maintenance page
 
-The 503 is rendered from a {b`Tempest\Router\Maintenance\MaintenanceModeWasActive`} exception. To use your own maintenance page, write a [custom exception renderer](./14-exception-handling.md#customizing-exception-rendering) that matches it:
+The 503 is rendered from a {b`Tempest\Router\Maintenance\MaintenanceModeWasEnabled`} exception. To use your own maintenance page, write a [custom exception renderer](./14-exception-handling.md#customizing-exception-rendering) that matches it:
 
 ```php app/MaintenancePageRenderer.php
 use Tempest\Http\ContentType;
@@ -72,7 +72,7 @@ use Tempest\Http\Request;
 use Tempest\Http\Response;
 use Tempest\Http\Status;
 use Tempest\Router\Exceptions\ExceptionRenderer;
-use Tempest\Router\Maintenance\MaintenanceModeWasActive;
+use Tempest\Router\Maintenance\MaintenanceModeWasEnabled;
 use Throwable;
 
 use function Tempest\View\view;
@@ -81,7 +81,7 @@ final class MaintenancePageRenderer implements ExceptionRenderer
 {
     public function canRender(Throwable $throwable, Request $request): bool
     {
-        return $throwable instanceof MaintenanceModeWasActive
+        return $throwable instanceof MaintenanceModeWasEnabled
             && $request->accepts(ContentType::HTML);
     }
 

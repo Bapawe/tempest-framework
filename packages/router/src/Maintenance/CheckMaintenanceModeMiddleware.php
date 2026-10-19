@@ -30,7 +30,7 @@ final readonly class CheckMaintenanceModeMiddleware implements HttpMiddleware
         $state = $this->maintenanceMode->current();
 
         if ($state instanceof MaintenanceModeState && ! $this->isExcluded($request->path, $state->excludedPaths)) {
-            throw new MaintenanceModeWasActive(retry: $state->retry);
+            throw new MaintenanceModeWasEnabled(retry: $state->retry);
         }
 
         return $next($request);
