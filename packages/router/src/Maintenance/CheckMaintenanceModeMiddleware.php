@@ -13,12 +13,12 @@ use Tempest\Support\Priority;
 /**
  * Answers every request with a `503 Service Unavailable` while maintenance mode is enabled.
  *
- * It runs after `HandleRouteExceptionMiddleware`, so its exception is rendered, and before `MatchRouteMiddleware`,
- * so unknown URLs get a 503 instead of a 404. The state is read on every request, so that running workers
- * pick up `maintenance:enable` and `maintenance:disable` without a restart. Excluded paths come from the state, as saved
- * by `maintenance:enable`, so this check and the early check in `maintenance.stub.php` always agree.
+ * It runs before `MatchRouteMiddleware`, so unknown URLs get a 503 instead of a 404. The state is read on every
+ * request, so that running workers pick up `maintenance:enable` and `maintenance:disable` without a restart. Excluded
+ * paths come from the state, as saved by `maintenance:enable`, so this check and the early check in
+ * `maintenance.stub.php` always agree.
  */
-#[Priority(Priority::FRAMEWORK - 30)]
+#[Priority(Priority::FRAMEWORK - 31)]
 final readonly class CheckMaintenanceModeMiddleware implements HttpMiddleware
 {
     public function __construct(
