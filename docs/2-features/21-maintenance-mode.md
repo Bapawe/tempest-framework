@@ -7,9 +7,9 @@ description: "Enable maintenance mode while you deploy, migrate or repair your a
 
 While an application is being deployed, migrated or repaired, visitors can hit half-updated code or a database in the middle of a migration. While maintenance mode is enabled, the application answers every HTTP request with a `503 Service Unavailable` instead of handling it.
 
-The 503 goes through Tempest's normal [exception rendering](./14-exception-handling.md), so clients that accept HTML get an error page and clients that accept JSON get a JSON error response.
+The 503 goes through Tempest's normal [exception rendering](./exception-handling), so clients that accept HTML get an error page and clients that accept JSON get a JSON error response.
 
-Maintenance mode covers HTTP only. Console commands and [scheduled tasks](./11-scheduling.md) keep running, so you can still run migrations while it is enabled.
+Maintenance mode covers HTTP only. Console commands and [scheduled tasks](./scheduling) keep running, so you can still run migrations while it is enabled.
 
 ## Enabling maintenance mode
 
@@ -67,7 +67,7 @@ Requests to excluded paths are handled normally, which means they run against th
 
 ## Customizing the maintenance page
 
-The 503 is rendered from a {b`Tempest\Router\Maintenance\MaintenanceModeWasEnabled`} exception. To use your own maintenance page, write a [custom exception renderer](./14-exception-handling.md#customizing-exception-rendering) that matches it:
+The 503 is rendered from a {b`Tempest\Router\Maintenance\MaintenanceModeWasEnabled`} exception. To use your own maintenance page, write a [custom exception renderer](./exception-handling#customizing-exception-rendering) that matches it:
 
 ```php app/MaintenancePageRenderer.php
 use Tempest\Http\ContentType;
@@ -127,5 +127,5 @@ New applications include this check. For an existing application, add the `if` b
 
 ## Limitations
 
-- **Static pages stay reachable.** [Static pages](./13-static-pages.md) are served directly by your web server without booting Tempest, so maintenance mode doesn't apply to them.
+- **Static pages stay reachable.** [Static pages](./static-pages) are served directly by your web server without booting Tempest, so maintenance mode doesn't apply to them.
 - **Maintenance mode only applies to the current server.** Its state is stored in Tempest's internal storage directory (`.tempest` by default). If your application runs on several servers, enable and disable it on each of them.
