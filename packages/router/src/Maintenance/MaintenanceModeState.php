@@ -12,7 +12,6 @@ use Tempest\DateTime\DateTimeInterface;
 final readonly class MaintenanceModeState
 {
     public function __construct(
-        /** When maintenance mode was enabled. */
         public DateTimeInterface $enabledSince,
 
         /** How many seconds clients are told to wait before retrying, if a value was given. */

@@ -10,10 +10,7 @@ namespace Tempest\Router\Maintenance;
 final readonly class MaintenancePage
 {
     public function __construct(
-        /** The body sent to clients that accept HTML. */
         public string $html,
-
-        /** The body sent to clients that accept JSON. */
         public string $json,
     ) {}
 

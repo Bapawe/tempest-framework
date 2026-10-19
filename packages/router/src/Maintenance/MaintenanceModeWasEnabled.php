@@ -7,10 +7,6 @@ namespace Tempest\Router\Maintenance;
 use Exception;
 use Tempest\Router\Exceptions\RouterException;
 
-/**
- * Thrown when a request reaches the application while maintenance mode is enabled. Renders as a `503 Service Unavailable`,
- * with a `Retry-After` header when a retry value was given.
- */
 final class MaintenanceModeWasEnabled extends Exception implements RouterException
 {
     /**
