@@ -41,14 +41,18 @@ final readonly class MaintenanceEnableCommand
         $current = $this->maintenanceMode->current();
         $page = $this->renderPage($retry);
 
+        $this->maintenanceMode->enable(new MaintenanceModeState(
+            enabledSince: $current->enabledSince ?? $this->clock->now(),
+            retry: $retry,
+            excludedPaths: $this->config->excludedPaths,
+        ), $page);
+
         if ($current instanceof MaintenanceModeState) {
-            $this->maintenanceMode->enable(new MaintenanceModeState(enabledSince: $current->enabledSince, retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
             $this->console->info('Maintenance mode was already enabled, its settings are updated.');
 
             return ExitCode::SUCCESS;
         }
 
-        $this->maintenanceMode->enable(new MaintenanceModeState(enabledSince: $this->clock->now(), retry: $retry, excludedPaths: $this->config->excludedPaths), $page);
         $this->console->success('Maintenance mode is now enabled.');
 
         return ExitCode::SUCCESS;
