@@ -26,6 +26,8 @@ This `deploy.sh` script could look something like this:
 {:hl-comment:# Sourcing bashrc because we're connecting via SSH':}
 {:hl-keyword:.:} /home/user/.bashrc
 
+{:hl-keyword:tempest:} maintenance:enable --force --retry=300
+
 {:hl-comment:# Dependencies:}
 {:hl-keyword:composer:} install --no-dev
 {:hl-keyword:bun:} install
@@ -37,18 +39,22 @@ This `deploy.sh` script could look something like this:
 {:hl-keyword:tempest:} static:clean --force
 {:hl-keyword:bun:} run build
 {:hl-keyword:tempest:} static:generate --crawl --verbose=true
+
+{:hl-keyword:tempest:} maintenance:disable
 ```
 
 As you can see, there are a number of steps involved to deploying a Tempest project:
 
+- Enabling maintenance mode, so visitors get a `503` instead of a half-updated application
 - Installing composer and frontend dependencies
 - Clearing all caches and regenerating the discovery cache
 - Running migrations
 - Clean up static assets if you're using static pages
 - Compiling frontend assets
-- Finally, regenerating static pages if you're using them
+- Regenerating static pages if you're using them
+- Finally, disabling maintenance mode
 
-To keep visitors from reaching a half-updated application while these steps run, you can enable maintenance mode with `{txt}maintenance:enable --force` at the start of the script and disable it with `{txt}maintenance:disable` at the end. See [maintenance mode](../features/maintenance-mode) for details.
+Maintenance mode is enabled before `{txt}composer install`, so that it also covers the moment the `vendor` directory is being updated. See [maintenance mode](../features/maintenance-mode) for details.
 
 ## Initial installation
 
