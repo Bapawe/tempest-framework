@@ -123,7 +123,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 HttpApplication::boot(__DIR__ . '/../')->run();
 ```
 
-New applications include this check. For an existing application, add the `if` block above the line that requires `vendor/autoload.php`. If you pass a custom `internalStorage` directory to `HttpApplication::boot()`, replace `.tempest` in the path with that directory.
+New applications include this check. For an existing application, add the `if` block above the line that requires `vendor/autoload.php`, or let Rector add it with the `Tempest\Upgrade\Set\TempestSetList::TEMPEST_321` set from `tempest/upgrade`. If you pass a custom `internalStorage` directory to `HttpApplication::boot()`, replace `.tempest` in the path with that directory.
 
 ## Limitations
 
