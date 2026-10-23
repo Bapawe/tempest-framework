@@ -9,6 +9,7 @@ use Tempest\Console\ExitCode;
 use Tempest\Core\AppConfig;
 use Tempest\Router\Static\StaticGenerateCommand;
 use Tests\Tempest\Integration\FrameworkIntegrationTestCase;
+use Tests\Tempest\Integration\Http\Maintenance\UsesTemporaryInternalStorage;
 use Tests\Tempest\Integration\Http\Static\Fixtures\StaticPageController;
 
 use function Tempest\root_path;
@@ -18,6 +19,8 @@ use function Tempest\root_path;
  */
 final class StaticGenerateCommandTest extends FrameworkIntegrationTestCase
 {
+    use UsesTemporaryInternalStorage;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -52,6 +55,37 @@ final class StaticGenerateCommandTest extends FrameworkIntegrationTestCase
 
         $this->assertStringContainsString('c', $d);
         $this->assertStringContainsString('d', $d);
+    }
+
+    #[Test]
+    public function pages_are_generated_while_maintenance_mode_is_enabled(): void
+    {
+        $this->container->config(new AppConfig(baseUri: 'https://test.com'));
+
+        $this->console->call('maintenance:enable --force')->assertSuccess();
+
+        $this->console
+            ->call(StaticGenerateCommand::class)
+            ->assertExitCode(ExitCode::SUCCESS);
+
+        $this->assertFileExists(root_path($this->kernel->root, '/public/static/a/b/index.html'));
+        $this->assertFileExists(root_path($this->kernel->root, '/public/static/c/d/index.html'));
+    }
+
+    #[Test]
+    public function links_are_crawled_while_maintenance_mode_is_enabled(): void
+    {
+        $this->http->registerRoute([StaticPageController::class, 'redirectingRoute']);
+        $this->http->registerRoute([StaticPageController::class, 'hasRedirect']);
+        $this->http->registerStaticPage([StaticPageController::class, 'hasRedirect']);
+
+        $this->container->config(new AppConfig(baseUri: 'https://test.com'));
+
+        $this->console->call('maintenance:enable --force')->assertSuccess();
+
+        $this->console
+            ->call(StaticGenerateCommand::class, ['--crawl' => true])
+            ->assertExitCode(ExitCode::SUCCESS);
     }
 
     #[Test]

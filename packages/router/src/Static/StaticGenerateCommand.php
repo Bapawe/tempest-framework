@@ -22,6 +22,7 @@ use Tempest\Http\Status;
 use Tempest\HttpClient\HttpClient;
 use Tempest\Intl;
 use Tempest\Router\DataProvider;
+use Tempest\Router\Maintenance\CheckMaintenanceModeMiddleware;
 use Tempest\Router\RouteConfig;
 use Tempest\Router\Router;
 use Tempest\Router\SetCookieHeadersMiddleware;
@@ -110,7 +111,9 @@ final class StaticGenerateCommand
             };
         });
 
+        // Pages are rendered from synthetic requests, which maintenance mode should not block, since it's typically enabled during deploys
         $this->routeConfig->middleware->remove(
+            CheckMaintenanceModeMiddleware::class,
             ManageSessionMiddleware::class,
             SetCookieHeadersMiddleware::class,
             TrackPreviousUrlMiddleware::class,
