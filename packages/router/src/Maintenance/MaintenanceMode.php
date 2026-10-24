@@ -57,7 +57,7 @@ final readonly class MaintenanceMode
         return new MaintenanceModeState(
             enabledSince: DateTime::fromTimestamp($data['enabled_since']),
             retry: is_int($data['retry'] ?? null) ? $data['retry'] : null,
-            excludedPaths: is_array($data['excluded_paths'] ?? null) ? array_values(array_filter($data['excluded_paths'], is_string(...))) : [],
+            excludedPaths: new ExcludedPaths(is_array($data['excluded_paths'] ?? null) ? $data['excluded_paths'] : []),
         );
     }
 
@@ -76,7 +76,9 @@ final readonly class MaintenanceMode
         Filesystem\write_json($temporary, [
             'enabled_since' => $state->enabledSince->getTimestamp()->getSeconds(),
             'retry' => $state->retry,
-            'excluded_paths' => $state->excludedPaths,
+            'excluded_paths' => $state->excludedPaths->patterns,
+            // Only read by the early check, which can't load `ExcludedPaths`
+            'excluded_paths_regex' => $state->excludedPaths->compile(),
         ]);
 
         Filesystem\move($temporary, $this->path(self::STATE_FILENAME), overwrite: true);

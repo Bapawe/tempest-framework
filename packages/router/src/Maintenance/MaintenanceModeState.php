@@ -18,11 +18,9 @@ final readonly class MaintenanceModeState
         public ?int $retry = null,
 
         /**
-         * The excluded paths configured when maintenance mode was enabled. Both maintenance checks match against
-         * these, so changes to the config take effect the next time `maintenance:enable` runs.
-         *
-         * @var string[]
+         * The excluded paths configured when maintenance mode was enabled. Changes to the config take effect the next
+         * time `maintenance:enable` runs.
          */
-        public array $excludedPaths = [],
+        public ExcludedPaths $excludedPaths = new ExcludedPaths(),
     ) {}
 }

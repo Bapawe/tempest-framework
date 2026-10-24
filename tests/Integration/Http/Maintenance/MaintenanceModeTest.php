@@ -275,12 +275,51 @@ final class MaintenanceModeTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
+    public function enabling_saves_the_excluded_paths_and_their_regex(): void
+    {
+        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health', '/health/*']));
+
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $state = read_json($this->kernel->internalStorage . '/maintenance/state.json');
+
+        $this->assertSame(['/health', '/health/*'], $state['excluded_paths'] ?? null);
+        $this->assertSame('#^(?:/health|/health/.+)\z#s', $state['excluded_paths_regex'] ?? null);
+    }
+
+    #[Test]
+    public function enabling_without_excluded_paths_saves_no_paths_and_no_regex(): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+
+        $state = read_json($this->kernel->internalStorage . '/maintenance/state.json');
+
+        $this->assertSame([], $state['excluded_paths'] ?? null);
+        $this->assertArrayHasKey('excluded_paths_regex', $state);
+        $this->assertNull($state['excluded_paths_regex']);
+    }
+
+    #[Test]
     #[TestWith(['"/maintenance-mode/page"', Status::SERVICE_UNAVAILABLE])]
     #[TestWith(['[42, ["/maintenance-mode/page"], "/maintenance-mode/page"]', Status::OK])]
     public function excluded_paths_that_are_not_strings_are_skipped(string $excludedPaths, Status $status): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
         write_file($this->kernel->internalStorage . '/maintenance/state.json', "{\"enabled_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
+
+        $this->http
+            ->get('/maintenance-mode/page')
+            ->assertStatus($status);
+    }
+
+    #[Test]
+    #[TestWith(['"excluded_paths":["/maintenance-mode/page"]', Status::OK])]
+    #[TestWith(['"excluded_paths":["/maintenance-mode/page"],"excluded_paths_regex":"#(#"', Status::OK])]
+    #[TestWith(['"excluded_paths_regex":"#^(?:/maintenance-mode/page)\\\\z#s"', Status::SERVICE_UNAVAILABLE])]
+    public function the_middleware_matches_the_saved_paths_not_the_saved_regex(string $stateFields, Status $status): void
+    {
+        $this->console->call('maintenance:enable')->assertSuccess();
+        write_file($this->kernel->internalStorage . '/maintenance/state.json', "{\"enabled_since\":1741944413,{$stateFields}}");
 
         $this->http
             ->get('/maintenance-mode/page')

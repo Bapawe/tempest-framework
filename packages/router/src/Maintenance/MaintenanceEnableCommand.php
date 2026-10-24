@@ -44,7 +44,7 @@ final readonly class MaintenanceEnableCommand
         $this->maintenanceMode->enable(new MaintenanceModeState(
             enabledSince: $current->enabledSince ?? $this->clock->now(),
             retry: $retry,
-            excludedPaths: $this->config->excludedPaths,
+            excludedPaths: new ExcludedPaths($this->config->excludedPaths),
         ), $page);
 
         if ($current instanceof MaintenanceModeState) {

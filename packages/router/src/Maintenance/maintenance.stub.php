@@ -21,30 +21,13 @@
         return;
     }
 
-    $excludedPaths = is_array($state['excluded_paths'] ?? null) ? $state['excluded_paths'] : [];
-
     $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     $path = is_string($path) ? $path : '/';
+    $regex = $state['excluded_paths_regex'] ?? null;
 
-    // The same matching rules as `CheckMaintenanceModeMiddleware`
-    foreach ($excludedPaths as $pattern) {
-        if (! is_string($pattern)) {
-            continue;
-        }
-
-        if (! str_ends_with($pattern, '*')) {
-            if ($path === $pattern) {
-                return;
-            }
-
-            continue;
-        }
-
-        $prefix = substr($pattern, 0, -1);
-
-        if (strlen($path) > strlen($prefix) && str_starts_with($path, $prefix)) {
-            return;
-        }
+    // The same matching as `ExcludedPaths::matches()`, through the regex it compiled
+    if (is_string($regex) && @preg_match($regex, $path) === 1) {
+        return;
     }
 
     http_response_code(503);

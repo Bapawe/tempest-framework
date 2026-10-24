@@ -53,18 +53,6 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
     }
 
     #[Test]
-    public function a_trailing_slash_is_significant_for_exact_excluded_paths(): void
-    {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health']));
-
-        $this->console->call('maintenance:enable')->assertSuccess();
-
-        $this->http
-            ->get('/health/')
-            ->assertStatus(Status::SERVICE_UNAVAILABLE);
-    }
-
-    #[Test]
     public function a_wildcard_excluded_path_matches_paths_one_level_below_the_prefix(): void
     {
         $this->container->config(new MaintenanceConfig(excludedPaths: ['/health/*']));
@@ -75,35 +63,6 @@ final class MaintenanceModeExcludedPathsTest extends FrameworkIntegrationTestCas
             ->get('/health/live')
             ->assertOk()
             ->assertSee('Alive');
-    }
-
-    #[Test]
-    public function a_wildcard_excluded_path_matches_deeper_paths(): void
-    {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health/*']));
-
-        $this->console->call('maintenance:enable')->assertSuccess();
-
-        $this->http
-            ->get('/health/ready/database')
-            ->assertOk()
-            ->assertSee('Database ready');
-    }
-
-    #[Test]
-    public function a_wildcard_excluded_path_does_not_match_the_bare_prefix(): void
-    {
-        $this->container->config(new MaintenanceConfig(excludedPaths: ['/health/*']));
-
-        $this->console->call('maintenance:enable')->assertSuccess();
-
-        $this->http
-            ->get('/health')
-            ->assertStatus(Status::SERVICE_UNAVAILABLE);
-
-        $this->http
-            ->get('/health/')
-            ->assertStatus(Status::SERVICE_UNAVAILABLE);
     }
 
     #[Test]

@@ -213,15 +213,17 @@ final class EarlyMaintenanceCheckTest extends FrameworkIntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['"/health"', '/health', 503])]
-    #[TestWith(['[42, ["/health"], "/health"]', '/health', 200])]
-    #[TestWith(['[42, ["/health"], "/health"]', '/anything', 503])]
-    public function excluded_paths_that_are_not_strings_are_skipped(string $excludedPaths, string $path, int $status): void
+    #[TestWith(['"excluded_paths_regex":"#^(?:/health)\\\\z#s"', 200])]
+    #[TestWith(['"excluded_paths_regex":"#(#"', 503])]
+    #[TestWith(['"excluded_paths_regex":42', 503])]
+    #[TestWith(['"excluded_paths_regex":null', 503])]
+    #[TestWith(['"retry":null', 503])]
+    public function only_a_usable_saved_regex_excludes_paths(string $stateFields, int $status): void
     {
         $this->console->call('maintenance:enable')->assertSuccess();
-        write_file($this->applicationRoot . '/.tempest/maintenance/state.json', "{\"enabled_since\":1741944413,\"excluded_paths\":{$excludedPaths}}");
+        write_file($this->applicationRoot . '/.tempest/maintenance/state.json', "{\"enabled_since\":1741944413,{$stateFields}}");
 
-        $this->assertSame($status, $this->request($path)->getStatusCode());
+        $this->assertSame($status, $this->request('/health')->getStatusCode());
     }
 
     #[Test]
